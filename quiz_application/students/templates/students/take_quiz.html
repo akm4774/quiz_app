@@ -1,0 +1,10 @@
+{% extends 'students/base.html' %}
+{% block title %}Take Quiz{% endblock %}
+{% block content %}
+<h2>Quiz: {{ quiz.title }}</h2>
+<form method="post">
+    {% csrf_token %}
+    <!-- Quiz questions will be rendered here -->
+    <button type="submit">Submit</button>
+</form>
+{% endblock %}
