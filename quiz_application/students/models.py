@@ -28,24 +28,11 @@ def create_or_update_student_profile(sender, instance, created, **kwargs):
         Profile.objects.create(student=instance)
     instance.profile.save()
 
-class Quiz(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    schedule = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class QuizResult(models.Model):
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE)
+    quiz = models.ForeignKey('admins.Quiz', on_delete=models.CASCADE)
+    score = models.FloatField()
+    taken_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
-
-class Question(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    question_text = models.TextField()
-    option_1 = models.CharField(max_length=200)
-    option_2 = models.CharField(max_length=200)
-    option_3 = models.CharField(max_length=200)
-    option_4 = models.CharField(max_length=200)
-    correct_option = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.question_text
+        return f'{self.student.user.username} - {self.quiz.title}'

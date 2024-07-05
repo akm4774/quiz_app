@@ -1,0 +1,15 @@
+<!-- admins/templates/admins/edit_quiz.html -->
+{% extends 'admins/base.html' %}
+
+{% block title %}
+Edit Quiz
+{% endblock %}
+
+{% block content %}
+<h2>Edit Quiz</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save changes</button>
+</form>
+{% endblock %}

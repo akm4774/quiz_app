@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'admins/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Quiz Application Admin Panel</h1>
+        <nav>
+            <ul>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li><a href="{% url 'create_quiz' %}">Create Quiz</a></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" style="background: none; border: none; color: #007bff; cursor: pointer; padding: 0; font: inherit;">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'admin_login' %}">Admin Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2024 Quiz Application Admin Panel</p>
+    </footer>
+    <script src="{% static 'admins/js/scripts.js' %}"></script>
+</body>
+</html>

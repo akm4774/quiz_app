@@ -1,0 +1,15 @@
+{% extends "admins/base.html" %}
+
+{% block title %}
+Create Quiz
+{% endblock %}
+
+{% block content %}
+<h2>Create a New Quiz</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Quiz</button>
+</form>
+<a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a>
+{% endblock %}

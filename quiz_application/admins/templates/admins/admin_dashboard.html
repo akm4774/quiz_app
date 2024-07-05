@@ -1,0 +1,31 @@
+{% extends "admins/base.html" %}
+
+{% block title %}
+Admin Dashboard
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h2>Admin Dashboard</h2>
+    <ul class="quiz-list">
+        {% for quiz in quizzes %}
+            <li class="quiz-item">
+                <div class="quiz-info">
+                    <h3>{{ quiz.title }}</h3>
+                    <p>{{ quiz.description }}</p>
+                </div>
+                <div class="quiz-actions">
+                    <a class="btn" href="{% url 'create_question' %}?quiz_id={{ quiz.id }}">Add Question</a>
+                    <form method="post" action="{% url 'delete_quiz' quiz.id %}" class="delete-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete Quiz</button>
+                    </form>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="create-quiz">
+        <a class="btn btn-primary" href="{% url 'create_quiz' %}">Create New Quiz</a>
+    </div>
+</div>
+{% endblock %}
