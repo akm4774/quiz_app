@@ -1,31 +1,19 @@
-{% extends "admins/base.html" %}
-
-{% block title %}
-Admin Dashboard
-{% endblock %}
+{% extends 'admins/base.html' %}
 
 {% block content %}
-<div class="admin-dashboard">
-    <h2>Admin Dashboard</h2>
-    <ul class="quiz-list">
-        {% for quiz in quizzes %}
-            <li class="quiz-item">
-                <div class="quiz-info">
-                    <h3>{{ quiz.title }}</h3>
-                    <p>{{ quiz.description }}</p>
-                </div>
-                <div class="quiz-actions">
-                    <a class="btn" href="{% url 'create_question' %}?quiz_id={{ quiz.id }}">Add Question</a>
-                    <form method="post" action="{% url 'delete_quiz' quiz.id %}" class="delete-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Delete Quiz</button>
-                    </form>
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
-    <div class="create-quiz">
-        <a class="btn btn-primary" href="{% url 'create_quiz' %}">Create New Quiz</a>
-    </div>
-</div>
+  <h1>Admin Dashboard</h1>
+  <h2>Quizzes:</h2>
+  <ul>
+    {% for quiz in quizzes %}
+      <li>
+        {{ quiz.title }}
+        <a href="{% url 'edit_quiz' quiz.pk %}">Edit</a>
+        <a href="{% url 'delete_quiz' quiz.pk %}">Delete</a>
+      </li>
+    {% empty %}
+      <li>No quizzes yet.</li>
+    {% endfor %}
+  </ul>
+
+  <p><a href="{% url 'create_quiz' %}">Create New Quiz</a></p>
 {% endblock %}

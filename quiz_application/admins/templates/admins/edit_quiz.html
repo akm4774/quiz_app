@@ -1,15 +1,34 @@
-<!-- admins/templates/admins/edit_quiz.html -->
 {% extends 'admins/base.html' %}
 
-{% block title %}
-Edit Quiz
-{% endblock %}
-
 {% block content %}
-<h2>Edit Quiz</h2>
-<form method="post">
+  <h1>Edit Quiz: {{ quiz.title }}</h1>
+  <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Save changes</button>
-</form>
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <h2>Questions:</h2>
+  <ul>
+    {% for question in quiz.question_set.all %}
+      <li>
+        {{ question.text }}
+        <ul>
+          <li>Choice 1: {{ question.choice1 }}</li>
+          <li>Choice 2: {{ question.choice2 }}</li>
+          <li>Choice 3: {{ question.choice3 }}</li>
+          <li>Choice 4: {{ question.choice4 }}</li>
+          <li>Correct Answer: {{ question.correct_answer }}</li>
+        </ul>
+        <a href="{% url 'delete_question' question.pk %}">Delete</a>
+        <a href="{% url 'edit_question' quiz.pk question.pk %}">Edit</a>
+      </li>
+    {% empty %}
+      <li>No questions yet.</li>
+    {% endfor %}
+  </ul>
+
+  <p><a href="{% url 'create_question' quiz.pk %}">Add New Question</a></p>
+
+  <p><a href="{% url 'delete_quiz' quiz.pk %}">Delete Quiz</a></p>
 {% endblock %}

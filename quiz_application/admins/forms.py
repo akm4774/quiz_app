@@ -1,22 +1,19 @@
-# admins/forms.py
 from django import forms
-from admins.models import Quiz, Question, Choice
-from students.models import Student  # Import the Student model
+from .models import Quiz, Question
 
 class QuizForm(forms.ModelForm):
     class Meta:
         model = Quiz
-        fields = ['title', 'description', 'due_date', 'assigned_students']
-        widgets = {
-            'assigned_students': forms.CheckboxSelectMultiple(),
-        }
+        fields = ('title', 'description')
 
 class QuestionForm(forms.ModelForm):
+    correct_answer = forms.CharField(label='Correct Answer', widget=forms.RadioSelect(choices=[
+        ('choice1', 'Choice 1'),
+        ('choice2', 'Choice 2'),
+        ('choice3', 'Choice 3'),
+        ('choice4', 'Choice 4'),
+    ]))
+
     class Meta:
         model = Question
-        fields = ['quiz', 'question_text']
-
-class ChoiceForm(forms.ModelForm):
-    class Meta:
-        model = Choice
-        fields = ['question', 'text', 'is_correct']
+        fields = ('text', 'choice1', 'choice2', 'choice3', 'choice4', 'correct_answer')

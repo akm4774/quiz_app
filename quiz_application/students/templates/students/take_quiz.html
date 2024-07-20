@@ -5,21 +5,24 @@ Take Quiz
 {% endblock %}
 
 {% block content %}
-<h2>{{ quiz.title }}</h2>
-<p>{{ quiz.description }}</p>
-<form method="post">
-    {% csrf_token %}
-    {% for question in questions %}
-        <div>
-            <h3>{{ question.question_text }}</h3>
-            {% for choice in question.choices.all %}
-                <div>
-                    <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}">
-                    <label>{{ choice.text }}</label>
-                </div>
-            {% endfor %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center mb-4">{{ quiz.title }}</h2>
+            <p class="lead text-center">{{ quiz.description }}</p>
+            <form method="post">
+                {% csrf_token %}
+                {% for form in forms %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ form.instance.text }}</h3>
+                            {{ form.correct_answer }}
+                        </div>
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary btn-lg w-100">Submit Quiz</button>
+            </form>
         </div>
-    {% endfor %}
-    <button type="submit">Submit Quiz</button>
-</form>
+    </div>
+</div>
 {% endblock %}

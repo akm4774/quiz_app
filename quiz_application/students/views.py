@@ -14,39 +14,38 @@ from admins.models import Quiz
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from admins.models import Quiz, Question, Choice
+from admins.models import Quiz, Question
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
+from admins.forms import QuestionForm
 @login_required
 def available_quizzes(request):
     student = request.user.student
-    quizzes = student.quizzes.filter(due_date__gt=timezone.now())
+    quizzes = Quiz.objects.filter(due_date__gt=timezone.now(), is_available_to_students=True)
     return render(request, 'students/available_quizzes.html', {'quizzes': quizzes})
 
 @login_required
 def take_quiz(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id)
-    questions = quiz.questions.all()
+    quiz = Quiz.objects.get(id=quiz_id)
+    questions = quiz.question_set.all()
 
     if request.method == 'POST':
         score = 0
-        total_questions = questions.count()
         for question in questions:
-            selected_choice_id = request.POST.get(f'question_{question.id}')
-            if selected_choice_id:
-                selected_choice = get_object_or_404(Choice, id=selected_choice_id)
-                if selected_choice.is_correct:
+            form = QuestionForm(request.POST, prefix=str(question.id))
+            if form.is_valid():
+                user_answer = form.cleaned_data['correct_answer']
+                if user_answer == question.correct_answer:
                     score += 1
 
-        score_percentage = (score / total_questions) * 100
-        QuizResult.objects.create(student=request.user.student, quiz=quiz, score=score_percentage)
-        messages.success(request, f'Quiz submitted successfully. Your score: {score_percentage}%')
+        score_percentage = (score / questions.count()) * 100
+        # You can save the score to the database or do whatever you want with it
         return redirect('quiz_history')
 
-    return render(request, 'students/take_quiz.html', {'quiz': quiz, 'questions': questions})
+    forms = [QuestionForm(prefix=str(question.id)) for question in questions]
 
+    return render(request, 'students/take_quiz.html', {'quiz': quiz, 'forms': forms})
 @login_required
 def quiz_history(request):
     student = request.user.student

@@ -1,14 +1,30 @@
 {% extends 'students/base.html' %}
+
 {% block title %}Profile{% endblock %}
+
 {% block content %}
-<h2>Profile</h2>
-<p>Username: {{ username }}</p>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <h3>Update Profile</h3>
-    {{ profile_form.as_p }}
-    <h3>Change Password</h3>
-    {{ password_form.as_p }}
-    <button type="submit">Save Changes</button>
-</form>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center mb-4">Profile</h2>
+            <p class="lead text-center">Username: {{ username }}</p>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Update Profile</h3>
+                        {{ profile_form.as_p }}
+                    </div>
+                </div>
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h3 class="card-title">Change Password</h3>
+                        {{ password_form.as_p }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
