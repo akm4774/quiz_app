@@ -33,19 +33,24 @@ def take_quiz(request, quiz_id):
     if request.method == 'POST':
         score = 0
         for question in questions:
-            form = QuestionForm(request.POST, prefix=str(question.id))
-            if form.is_valid():
-                user_answer = form.cleaned_data['correct_answer']
-                if user_answer == question.correct_answer:
-                    score += 1
+            user_answer = request.POST.get(f'question_{question.id}')
+            if user_answer == question.correct_answer:
+                score += 1
 
         score_percentage = (score / questions.count()) * 100
-        # You can save the score to the database or do whatever you want with it
+
+        # Create a QuizResult object and save it to the database
+        quiz_result = QuizResult(
+            student=request.user.student,
+            quiz=quiz,
+            score=score_percentage,
+            taken_at=timezone.now()
+        )
+        quiz_result.save()
+
         return redirect('quiz_history')
 
-    forms = [QuestionForm(prefix=str(question.id)) for question in questions]
-
-    return render(request, 'students/take_quiz.html', {'quiz': quiz, 'forms': forms})
+    return render(request, 'students/take_quiz.html', {'quiz': quiz})
 @login_required
 def quiz_history(request):
     student = request.user.student

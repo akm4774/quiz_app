@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from admins.models import Quiz
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     enrollment = models.CharField(max_length=100)
@@ -29,9 +29,9 @@ def create_or_update_student_profile(sender, instance, created, **kwargs):
     instance.profile.save()
 
 class QuizResult(models.Model):
-    student = models.ForeignKey('students.Student', on_delete=models.CASCADE)
-    quiz = models.ForeignKey('admins.Quiz', on_delete=models.CASCADE)
-    score = models.FloatField()
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=5, decimal_places=2)
     taken_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

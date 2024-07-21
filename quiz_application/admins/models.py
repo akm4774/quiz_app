@@ -20,4 +20,14 @@ class Question(models.Model):
     choice2 = models.CharField(max_length=255)
     choice3 = models.CharField(max_length=255)
     choice4 = models.CharField(max_length=255)
-    correct_answer = models.CharField(max_length=255)
+    # Use a CharField with a limited choice set 
+    correct_answer = models.CharField(
+        max_length=10,  # Adjust length as needed
+        choices=[
+            ('choice1', 'Choice 1'),
+            ('choice2', 'Choice 2'),
+            ('choice3', 'Choice 3'),
+            ('choice4', 'Choice 4'),
+        ],
+        default='choice1'  # Set a default if necessary
+    )

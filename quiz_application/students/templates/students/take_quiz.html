@@ -12,11 +12,28 @@ Take Quiz
             <p class="lead text-center">{{ quiz.description }}</p>
             <form method="post">
                 {% csrf_token %}
-                {% for form in forms %}
+                {% for question in quiz.question_set.all %}
                     <div class="card mb-4">
                         <div class="card-body">
-                            <h3 class="card-title">{{ form.instance.text }}</h3>
-                            {{ form.correct_answer }}
+                            <h3 class="card-title">{{ question.text }}</h3>
+                            <ul>
+                                <li>
+                                    <input type="radio" name="question_{{ question.id }}" value="choice1">
+                                    {{ question.choice1 }}
+                                </li>
+                                <li>
+                                    <input type="radio" name="question_{{ question.id }}" value="choice2">
+                                    {{ question.choice2 }}
+                                </li>
+                                <li>
+                                    <input type="radio" name="question_{{ question.id }}" value="choice3">
+                                    {{ question.choice3 }}
+                                </li>
+                                <li>
+                                    <input type="radio" name="question_{{ question.id }}" value="choice4">
+                                    {{ question.choice4 }}
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 {% endfor %}
