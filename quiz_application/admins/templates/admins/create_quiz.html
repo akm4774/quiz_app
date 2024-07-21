@@ -1,10 +1,13 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-  <h1>Create Quiz</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create Quiz</button>
-  </form>
+  <div class="container">
+    <h1 class="display-4">Create Quiz</h1>
+    <hr>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Create Quiz</button>
+    </form>
+  </div>
 {% endblock %}

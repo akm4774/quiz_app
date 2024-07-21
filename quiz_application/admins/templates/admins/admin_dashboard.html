@@ -1,19 +1,26 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-  <h1>Admin Dashboard</h1>
-  <h2>Quizzes:</h2>
-  <ul>
-    {% for quiz in quizzes %}
-      <li>
-        {{ quiz.title }}
-        <a href="{% url 'edit_quiz' quiz.pk %}">Edit</a>
-        <a href="{% url 'delete_quiz' quiz.pk %}">Delete</a>
-      </li>
-    {% empty %}
-      <li>No quizzes yet.</li>
-    {% endfor %}
-  </ul>
+  <div class="container">
+    <h1 class="display-4">Admin Dashboard</h1>
+    <hr>
+    <h2 class="mb-3">Quizzes:</h2>
+    <ul class="list-group">
+      {% for quiz in quizzes %}
+        <li class="list-group-item">
+          {{ quiz.title }}
+          <div class="float-right">
+            <a href="{% url 'edit_quiz' quiz.pk %}" class="btn btn-sm btn-primary">Edit</a>
+            <a href="{% url 'delete_quiz' quiz.pk %}" class="btn btn-sm btn-danger">Delete</a>
+          </div>
+        </li>
+      {% empty %}
+        <li class="list-group-item">No quizzes yet.</li>
+      {% endfor %}
+    </ul>
 
-  <p><a href="{% url 'create_quiz' %}">Create New Quiz</a></p>
+    <p class="mt-3">
+      <a href="{% url 'create_quiz' %}" class="btn btn-primary">Create New Quiz</a>
+    </p>
+  </div>
 {% endblock %}

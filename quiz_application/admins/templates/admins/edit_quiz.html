@@ -1,34 +1,43 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-  <h1>Edit Quiz: {{ quiz.title }}</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-  </form>
+  <div class="container">
+    <h1 class="display-4">Edit Quiz: {{ quiz.title }}</h1>
+    <hr>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
 
-  <h2>Questions:</h2>
-  <ul>
-    {% for question in quiz.question_set.all %}
-      <li>
-        {{ question.text }}
-        <ul>
-          <li>Choice 1: {{ question.choice1 }}</li>
-          <li>Choice 2: {{ question.choice2 }}</li>
-          <li>Choice 3: {{ question.choice3 }}</li>
-          <li>Choice 4: {{ question.choice4 }}</li>
-          <li>Correct Answer: {{ question.correct_answer }}</li>
-        </ul>
-        <a href="{% url 'delete_question' question.pk %}">Delete</a>
-        <a href="{% url 'edit_question' quiz.pk question.pk %}">Edit</a>
-      </li>
-    {% empty %}
-      <li>No questions yet.</li>
-    {% endfor %}
-  </ul>
+    <h2 class="mt-4">Questions:</h2>
+    <ul class="list-group">
+      {% for question in quiz.question_set.all %}
+        <li class="list-group-item">
+          {{ question.text }}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Choice 1: {{ question.choice1 }}</li>
+            <li class="list-group-item">Choice 2: {{ question.choice2 }}</li>
+            <li class="list-group-item">Choice 3: {{ question.choice3 }}</li>
+            <li class="list-group-item">Choice 4: {{ question.choice4 }}</li>
+            <li class="list-group-item">Correct Answer: {{ question.correct_answer }}</li>
+          </ul>
+          <div class="float-right">
+            <a href="{% url 'delete_question' question.pk %}" class="btn btn-sm btn-danger">Delete</a>
+            <a href="{% url 'edit_question' quiz.pk question.pk %}" class="btn btn-sm btn-primary">Edit</a>
+          </div>
+        </li>
+      {% empty %}
+        <li class="list-group-item">No questions yet.</li>
+      {% endfor %}
+    </ul>
 
-  <p><a href="{% url 'create_question' quiz.pk %}">Add New Question</a></p>
+    <p class="mt-3">
+      <a href="{% url 'create_question' quiz.pk %}" class="btn btn-primary">Add New Question</a>
+    </p>
 
-  <p><a href="{% url 'delete_quiz' quiz.pk %}">Delete Quiz</a></p>
+    <p class="mt-3">
+      <a href="{% url 'delete_quiz' quiz.pk %}" class="btn btn-danger">Delete Quiz</a>
+    </p>
+  </div>
 {% endblock %}
