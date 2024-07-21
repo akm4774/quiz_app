@@ -13,15 +13,16 @@
     <header class="header">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container">
-                <a class="navbar-brand" href="{% url 'student_dashboard' %}">Quiz Application</a>
+                <a class="navbar-brand" href="{% if user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'student_dashboard' %}{% endif %}">Quiz Application</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         {% if user.is_authenticated %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'student_dashboard' %}">Dashboard</a></li>
+                            
                             {% if not user.is_superuser %}
+                                <li class="nav-item"><a class="nav-link" href="{% url 'student_dashboard' %}">Dashboard</a></li>
                                 <li class="nav-item"><a class="nav-link" href="{% url 'available_quizzes' %}">Available Quizzes</a></li>
                                 <li class="nav-item"><a class="nav-link" href="{% url 'quiz_history' %}">Quiz History</a></li>
                                 <li class="nav-item"><a class="nav-link" href="{% url 'student_profile' %}">Profile</a></li>

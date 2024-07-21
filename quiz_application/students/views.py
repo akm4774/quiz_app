@@ -11,14 +11,10 @@ from django.contrib.auth import logout
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from admins.models import Quiz
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from admins.models import Quiz, Question
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from admins.forms import QuestionForm
+from admins.views import admin_dashboard
+
 @login_required
 def available_quizzes(request):
     student = request.user.student
@@ -72,12 +68,16 @@ def signup(request):
 
 def login_view(request):
     if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return redirect('student_admin_dashboard')
         return redirect('student_dashboard')
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
+            if user.is_superuser:
+                return redirect('student_admin_dashboard')
             return redirect('student_dashboard')
     else:
         form = AuthenticationForm()
@@ -87,7 +87,8 @@ def login_view(request):
 def student_dashboard(request):
     return render(request, 'students/student_dashboard.html')
 
-
+def student_admin_dashboard(request):
+    return admin_dashboard(request)
 
 
 
