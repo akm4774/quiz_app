@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from admins.models import Quiz
+from admins.models import Quiz, Question
+
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     enrollment = models.CharField(max_length=100)
@@ -36,3 +37,12 @@ class QuizResult(models.Model):
 
     def __str__(self):
         return f'{self.student.user.username} - {self.quiz.title}'
+
+class StudentAnswer(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.student.user.username} - {self.question.text}'

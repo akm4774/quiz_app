@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.urls import reverse_lazy
-from students.models import Student, QuizResult
+from students.models import Student, QuizResult, StudentAnswer
 from .forms import StudentProfileForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
@@ -14,46 +14,86 @@ from admins.models import Quiz
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from admins.views import admin_dashboard
-
-@login_required
-def available_quizzes(request):
-    student = request.user.student
-    quizzes = Quiz.objects.filter(due_date__gt=timezone.now(), is_available_to_students=True)
-    return render(request, 'students/available_quizzes.html', {'quizzes': quizzes})
+from admins.models import Quiz, Question
 
 @login_required
 def take_quiz(request, quiz_id):
-    quiz = Quiz.objects.get(id=quiz_id)
-    questions = quiz.question_set.all()
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    questions = quiz.questions.all()
 
     if request.method == 'POST':
+        student = request.user.student
         score = 0
+
         for question in questions:
             user_answer = request.POST.get(f'question_{question.id}')
-            if user_answer == question.correct_answer:
+            correct_answer = None
+
+            # Retrieve the correct answer based on the question type
+            if question.question_type == 'MCQ':
+                correct_answer = question.mcqquestion.correct_answer
+            elif question.question_type == 'TRUE_FALSE':
+                correct_answer = str(question.truefalsequestion.correct_answer)  # Boolean to string
+            elif question.question_type == 'SHORT':
+                correct_answer = question.shortanswerquestion.correct_answer
+            elif question.question_type == 'FILL_BLANK':
+                correct_answers = question.fillintheblankquestion.correct_answers
+                is_correct = user_answer in correct_answers  # Check if answer is among the accepted ones
+            elif question.question_type == 'MULTI_CORRECT':
+                correct_answers = question.multicorrectquestion.correct_answers
+                user_answers = request.POST.getlist(f'question_{question.id}')  # For multiple answers
+                is_correct = set(user_answers) == set(correct_answers)  # Check if sets match
+
+            # For non-FILL_BLANK and non-MULTI_CORRECT questions, compare directly
+            if correct_answer is not None:
+                is_correct = user_answer == correct_answer
+
+            # Save the student's answer
+            StudentAnswer.objects.create(
+                student=student,
+                question=question,
+                answer=user_answer,
+                is_correct=is_correct
+            )
+
+            # Increment the score if the answer is correct
+            if is_correct:
                 score += 1
 
+        # Calculate score percentage
         score_percentage = (score / questions.count()) * 100
 
-        # Create a QuizResult object and save it to the database
-        quiz_result = QuizResult(
-            student=request.user.student,
+        # Save the quiz result
+        QuizResult.objects.create(
+            student=student,
             quiz=quiz,
             score=score_percentage,
             taken_at=timezone.now()
         )
-        quiz_result.save()
 
         return redirect('quiz_history')
 
-    return render(request, 'students/take_quiz.html', {'quiz': quiz})
+    return render(request, 'students/take_quiz.html', {'quiz': quiz, 'questions': questions})
+
 @login_required
 def quiz_history(request):
     student = request.user.student
     quiz_results = QuizResult.objects.filter(student=student)
     return render(request, 'students/quiz_history.html', {'quiz_results': quiz_results})
 
+@login_required
+def review_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    student = request.user.student
+    answers = StudentAnswer.objects.filter(student=student, question__quiz=quiz)
 
+    return render(request, 'students/review_quiz.html', {'quiz': quiz, 'answers': answers})
+
+@login_required
+def available_quizzes(request):
+    student = request.user.student
+    quizzes = Quiz.objects.filter(due_date__gt=timezone.now(), is_available_to_students=True)
+    return render(request, 'students/available_quizzes.html', {'quizzes': quizzes})
 def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)

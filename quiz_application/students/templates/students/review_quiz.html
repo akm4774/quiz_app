@@ -1,0 +1,14 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+  <h2>Review Quiz: {{ quiz.title }}</h2>
+  <ul>
+    {% for answer in answers %}
+      <li>
+        <strong>Question:</strong> {{ answer.question.text }}<br>
+        <strong>Your Answer:</strong> {{ answer.answer }}<br>
+        <strong>Correct:</strong> {{ answer.is_correct|yesno:"Yes,No" }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
