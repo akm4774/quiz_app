@@ -12,6 +12,9 @@ class Quiz(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     due_date = models.DateTimeField(default=one_day_from_now)
     is_available_to_students = models.BooleanField(default=True)
+    allowed_students = models.ManyToManyField('students.Student', blank=True)  # Allow selection of students
+    max_attempts = models.PositiveIntegerField(default=1)  # Maximum allowed attempts
+    duration = models.PositiveIntegerField(default=30)  # Duration in minutes
 
     def __str__(self):
         return self.title
@@ -24,7 +27,7 @@ class Question(models.Model):
         ('TRUE_FALSE', 'True/False'),
         ('FILL_BLANK', 'Fill-in-the-Blank'),
     ]
-    
+
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
     text = models.CharField(max_length=255)
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES)

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from admins.models import Quiz, Question
+
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -31,18 +31,20 @@ def create_or_update_student_profile(sender, instance, created, **kwargs):
 
 class QuizResult(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    quiz = models.ForeignKey('admins.Quiz', on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2)
     taken_at = models.DateTimeField(auto_now_add=True)
+    attempt_number = models.PositiveIntegerField(default=1)  # Track which attempt this is
 
     def __str__(self):
-        return f'{self.student.user.username} - {self.quiz.title}'
+        return f'{self.student.user.username} - {self.quiz.title} (Attempt {self.attempt_number})'
 
 class StudentAnswer(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey('admins.Question', on_delete=models.CASCADE)
     answer = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
+        
         return f'{self.student.user.username} - {self.question.text}'

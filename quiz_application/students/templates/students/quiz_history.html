@@ -1,16 +1,14 @@
 {% extends "students/base.html" %}
 
-{% block title %}
-Quiz History
-{% endblock %}
+{% block title %}Quiz History{% endblock %}
 
 {% block content %}
   <h2>Quiz History</h2>
   <ul>
     {% for result in quiz_results %}
       <li>
-        {{ result.quiz.title }} - Score: {{ result.score }}%
-        <a href="{% url 'review_quiz' result.quiz.id %}">Review</a>
+        <strong>{{ result.quiz.title }}</strong> - Score: {{ result.score }}%
+        <a href="{% url 'quiz_review' result.id %}">Review</a>
       </li>
     {% endfor %}
   </ul>

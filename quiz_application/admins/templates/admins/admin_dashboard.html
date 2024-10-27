@@ -10,6 +10,7 @@
         <li class="list-group-item">
           {{ quiz.title }}
           <div class="float-right">
+            <a href="{% url 'quiz_performance' quiz.pk %}" class="btn btn-sm btn-info">View Performance</a>
             <a href="{% url 'edit_quiz' quiz.pk %}" class="btn btn-sm btn-primary">Edit</a>
             <a href="{% url 'delete_quiz' quiz.pk %}" class="btn btn-sm btn-danger">Delete</a>
           </div>

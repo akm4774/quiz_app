@@ -8,6 +8,7 @@ from .models import (
     Quiz, Question, MCQQuestion, ShortAnswerQuestion, 
     TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion
 )
+from students.models import QuizResult, Student
 
 @login_required
 def admin_dashboard(request):
@@ -19,32 +20,31 @@ def create_quiz(request):
     if request.method == 'POST':
         form = QuizForm(request.POST)
         if form.is_valid():
-            quiz = form.save()  # Save the quiz and store the instance
-            return redirect('create_question', quiz_id=quiz.id)  # Redirect to add questions
+            quiz = form.save()  # Save the quiz and get the instance
+            return redirect('create_question', quiz_id=quiz.id)  # Redirect to add questions for the quiz
     else:
         form = QuizForm()
-    return render(request, 'admins/create_quiz.html', {'form': form})
 
+    return render(request, 'admins/create_quiz.html', {'form': form})
 
 
 @login_required
 def create_question(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id)
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
 
     if request.method == 'POST':
-        form = QuestionForm(request.POST)
+        form = QuestionForm(request.POST)  # Assume you have a form for questions
         if form.is_valid():
             question = form.save(commit=False)
-            question.quiz = quiz
+            question.quiz = quiz  # Associate the new question with the quiz
             question.save()
-            return redirect('create_specific_question', question_id=question.id)
-        else:
-            print(form.errors)  # Debugging: Print form errors to console
+            return redirect('edit_quiz', pk=quiz_id)  # Redirect to quiz edit page
 
     else:
         form = QuestionForm()
-    
+
     return render(request, 'admins/create_question.html', {'form': form, 'quiz': quiz})
+
 @login_required
 def create_specific_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
@@ -85,38 +85,77 @@ def create_specific_question(request, question_id):
         'form': form,
         'question': question,
     })
+@login_required
 def edit_quiz(request, pk):
     quiz = get_object_or_404(Quiz, pk=pk)
+
     if request.method == 'POST':
         form = QuizForm(request.POST, instance=quiz)
         if form.is_valid():
-            form.save()
+            quiz = form.save()
+            # Update allowed students for the quiz
+            selected_students = request.POST.getlist('students')
+            quiz.allowed_students.set(selected_students)
+            quiz.save()
             return redirect('admin_dashboard')
     else:
         form = QuizForm(instance=quiz)
-    return render(request, 'admins/edit_quiz.html', {'form': form, 'quiz': quiz})
 
-def edit_question(request, quiz_pk, question_pk):
-    question = get_object_or_404(Question, pk=question_pk)
+    # Get all students for selection in the form
+    students = Student.objects.all()
+    questions = quiz.questions.all()
+    
+    return render(request, 'admins/edit_quiz.html', {
+        'form': form,
+        'quiz': quiz,
+        'questions': questions,
+        'students': students
+    })
+@login_required
+def edit_question(request, quiz_id, question_id):
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+    question = get_object_or_404(Question, pk=question_id)
 
     if request.method == 'POST':
         form = QuestionForm(request.POST, instance=question)
         if form.is_valid():
             form.save()
-            return redirect('edit_quiz', pk=quiz_pk)
+            return redirect('edit_quiz', pk=quiz_id)  # Redirect back to quiz edit page
+
     else:
         form = QuestionForm(instance=question)
 
-    context = {'quiz_pk': quiz_pk, 'form': form}
-    return render(request, 'admins/edit_question.html', context)
+    return render(request, 'admins/edit_question.html', {'form': form, 'quiz': quiz, 'question': question})
 
-def delete_question(request, pk):
-    question = get_object_or_404(Question, pk=pk)
-    quiz_id = question.quiz.pk
+
+@login_required
+def delete_question(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    quiz_id = question.quiz.id  # Get the associated quiz ID before deleting
     question.delete()
-    return redirect('edit_quiz', pk=quiz_id)
+    return redirect('edit_quiz', pk=quiz_id)  # Redirect to the quiz edit page
+
 
 def delete_quiz(request, pk):
     quiz = get_object_or_404(Quiz, pk=pk)
     quiz.delete()
     return redirect('admin_dashboard')
+
+def quiz_performance(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    results = QuizResult.objects.filter(quiz=quiz).order_by('-taken_at')
+    
+    student_data = {}
+    for result in results:
+        if result.student not in student_data:
+            student_data[result.student] = {
+                'attempts': 0,
+                'scores': []
+            }
+        student_data[result.student]['attempts'] += 1
+        student_data[result.student]['scores'].append(result.score)
+    
+    return render(request, 'admins/quiz_performance.html', {
+        'quiz': quiz,
+        'student_data': student_data
+    })

@@ -1,0 +1,77 @@
+{% extends 'admins/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="display-4">Quiz Performance: {{ quiz.title }}</h1>
+    <hr>
+
+    <h3>Student Performance</h3>
+
+    {% if student_data %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Number of Attempts</th>
+                    <th>Latest Scores</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student, data in student_data.items %}
+                    <tr>
+                        <td>{{ student.user.username }}</td>
+                        <td>{{ data.attempts }}</td>
+                        <td>
+                            {{ data.scores|join:", " }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h4>Score Progression</h4>
+        <canvas id="scoreChart"></canvas>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            var ctx = document.getElementById('scoreChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: JSON.parse(document.getElementById('attemptNumbers').textContent),
+                    datasets: [{
+                        label: 'Scores',
+                        data: JSON.parse(document.getElementById('scoresData').textContent),
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Score Percentage'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Attempt Number'
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+
+        <!-- Use JSON-safe script tags to pass data -->
+        <script type="application/json" id="attemptNumbers">{{ attempt_numbers|safe }}</script>
+        <script type="application/json" id="scoresData">{{ scores|safe }}</script>
+
+    {% else %}
+        <p>No student data available for this quiz.</p>
+    {% endif %}
+</div>
+{% endblock %}

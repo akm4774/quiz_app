@@ -15,40 +15,57 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from admins.views import admin_dashboard
 from admins.models import Quiz, Question
+from django.db.models import Avg, Count, Max
 
 @login_required
 def take_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
+    student = request.user.student
+
+    # Check if the student is allowed to take the quiz
+    if student not in quiz.allowed_students.all():
+        return render(request, 'students/quiz_access_denied.html')
+
+    # Check how many attempts the student has already made
+    attempts = QuizResult.objects.filter(student=student, quiz=quiz).count()
+    if attempts >= quiz.max_attempts:
+        return render(request, 'students/max_attempts_reached.html')
+    
+    if 'quiz_start_time' not in request.session:
+        request.session['quiz_start_time'] = str(timezone.now())
+
+    start_time = timezone.datetime.fromisoformat(request.session['quiz_start_time'])
+    elapsed_time = (timezone.now() - start_time).seconds / 60  # in minutes
+
+    if elapsed_time > quiz.duration:
+        return render(request, 'students/quiz_time_exceeded.html')
+
     questions = quiz.questions.all()
 
     if request.method == 'POST':
-        student = request.user.student
         score = 0
 
         for question in questions:
             user_answer = request.POST.get(f'question_{question.id}')
             correct_answer = None
 
-            # Retrieve the correct answer based on the question type
             if question.question_type == 'MCQ':
                 correct_answer = question.mcqquestion.correct_answer
             elif question.question_type == 'TRUE_FALSE':
-                correct_answer = str(question.truefalsequestion.correct_answer)  # Boolean to string
+                correct_answer = str(question.truefalsequestion.correct_answer)
             elif question.question_type == 'SHORT':
                 correct_answer = question.shortanswerquestion.correct_answer
             elif question.question_type == 'FILL_BLANK':
                 correct_answers = question.fillintheblankquestion.correct_answers
-                is_correct = user_answer in correct_answers  # Check if answer is among the accepted ones
+                is_correct = user_answer in correct_answers
             elif question.question_type == 'MULTI_CORRECT':
                 correct_answers = question.multicorrectquestion.correct_answers
-                user_answers = request.POST.getlist(f'question_{question.id}')  # For multiple answers
-                is_correct = set(user_answers) == set(correct_answers)  # Check if sets match
+                user_answers = request.POST.getlist(f'question_{question.id}')
+                is_correct = set(user_answers) == set(correct_answers)
 
-            # For non-FILL_BLANK and non-MULTI_CORRECT questions, compare directly
             if correct_answer is not None:
                 is_correct = user_answer == correct_answer
 
-            # Save the student's answer
             StudentAnswer.objects.create(
                 student=student,
                 question=question,
@@ -56,25 +73,23 @@ def take_quiz(request, quiz_id):
                 is_correct=is_correct
             )
 
-            # Increment the score if the answer is correct
             if is_correct:
                 score += 1
 
-        # Calculate score percentage
         score_percentage = (score / questions.count()) * 100
 
-        # Save the quiz result
+        # Save the quiz result with the attempt number
         QuizResult.objects.create(
             student=student,
             quiz=quiz,
             score=score_percentage,
-            taken_at=timezone.now()
+            taken_at=timezone.now(),
+            attempt_number=attempts + 1  # Increment the attempt number
         )
 
         return redirect('quiz_history')
 
     return render(request, 'students/take_quiz.html', {'quiz': quiz, 'questions': questions})
-
 @login_required
 def quiz_history(request):
     student = request.user.student
@@ -82,12 +97,16 @@ def quiz_history(request):
     return render(request, 'students/quiz_history.html', {'quiz_results': quiz_results})
 
 @login_required
-def review_quiz(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id)
-    student = request.user.student
-    answers = StudentAnswer.objects.filter(student=student, question__quiz=quiz)
+def quiz_review(request, quiz_result_id):
+    quiz_result = get_object_or_404(QuizResult, id=quiz_result_id)
+    student_answers = StudentAnswer.objects.filter(
+        student=quiz_result.student, question__quiz=quiz_result.quiz
+    )
 
-    return render(request, 'students/review_quiz.html', {'quiz': quiz, 'answers': answers})
+    return render(request, 'students/quiz_review.html', {
+        'quiz_result': quiz_result,
+        'student_answers': student_answers
+    })
 
 @login_required
 def available_quizzes(request):
@@ -125,12 +144,11 @@ def login_view(request):
 
 @login_required
 def student_dashboard(request):
-    return render(request, 'students/student_dashboard.html')
+    quizzes = Quiz.objects.all()  # Filter quizzes if needed
+    return render(request, 'students/student_dashboard.html', {'quizzes': quizzes})
 
 def student_admin_dashboard(request):
     return admin_dashboard(request)
-
-
 
 
 @login_required
@@ -157,3 +175,25 @@ def student_profile(request):
 def logout_view(request):
     logout(request)
     return render(request, 'registration/logout.html')
+
+
+@login_required
+def quiz_ranking(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    results = QuizResult.objects.filter(quiz=quiz).order_by('-score')
+
+    # Calculate rank of the current student
+    student_result = results.filter(student=request.user.student).first()
+    rank = list(results).index(student_result) + 1 if student_result else None
+
+    # Calculate stats
+    max_score = results.aggregate(Max('score'))['score__max']
+    avg_score = results.aggregate(Avg('score'))['score__avg']
+
+    return render(request, 'students/quiz_ranking.html', {
+        'quiz': quiz,
+        'results': results,
+        'rank': rank,
+        'max_score': max_score,
+        'avg_score': avg_score
+    })

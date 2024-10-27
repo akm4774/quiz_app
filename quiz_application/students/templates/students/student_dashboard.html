@@ -12,6 +12,12 @@
                 <a href="{% url 'available_quizzes' %}" class="btn btn-primary btn-lg">Take a Quiz</a>
                 <a href="{% url 'quiz_history' %}" class="btn btn-secondary btn-lg">View Quiz History</a>
                 <a href="{% url 'student_profile' %}" class="btn btn-success btn-lg">Manage Profile</a>
+                <h3 class="mt-4">Check Quiz Rankings</h3>
+                {% for quiz in quizzes %}
+                    <a href="{% url 'quiz_ranking' quiz.id %}" class="btn btn-info btn-lg my-2">
+                        Check Ranking for {{ quiz.title }}
+                    </a>
+                {% endfor %}
             </div>
         </div>
     </div>

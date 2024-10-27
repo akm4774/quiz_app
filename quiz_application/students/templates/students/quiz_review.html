@@ -1,0 +1,38 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="display-4">Quiz Review</h1>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Your Answer</th>
+                <th>Correct Answer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for answer in student_answers %}
+            <tr>
+                <td>{{ answer.question.text }}</td>
+                <td>{{ answer.answer }}</td>
+                <td>
+                    {% if answer.question.question_type == 'MCQ' %}
+                        {{ answer.question.mcqquestion.correct_answer }}
+                    {% elif answer.question.question_type == 'TRUE_FALSE' %}
+                        {{ answer.question.truefalsequestion.correct_answer }}
+                    {% elif answer.question.question_type == 'SHORT' %}
+                        {{ answer.question.shortanswerquestion.correct_answer }}
+                    {% elif answer.question.question_type == 'FILL_BLANK' %}
+                        {{ answer.question.fillintheblankquestion.correct_answers|join:", " }}
+                    {% elif answer.question.question_type == 'MULTI_CORRECT' %}
+                        {{ answer.question.multicorrectquestion.correct_answers|join:", " }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -4,9 +4,30 @@
   <div class="container">
     <h1 class="display-4">Create Quiz</h1>
     <hr>
+
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
+      
+      <div class="form-group">
+        <label for="students">Select Students Allowed to Take Quiz:</label>
+        <select name="students" id="students" class="form-control" multiple>
+          {% for student in students %}
+            <option value="{{ student.id }}">{{ student.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="attempts">Number of Attempts Allowed:</label>
+        <input type="number" id="attempts" name="attempts" class="form-control" min="1" value="1">
+      </div>
+
+      <div class="form-group">
+        <label for="duration">Quiz Duration (minutes):</label>
+        <input type="number" id="duration" name="duration" class="form-control" min="1">
+      </div>
+
       <button type="submit" class="btn btn-primary">Create Quiz</button>
     </form>
   </div>
