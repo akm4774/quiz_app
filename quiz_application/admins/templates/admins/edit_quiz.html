@@ -11,6 +11,7 @@
 
       <div class="form-group">
         <label for="students">Select Students Allowed to Take Quiz:</label>
+        <button type="button" id="selectAll" class="btn btn-sm btn-secondary mb-2">Select All</button>
         <select name="students" id="students" class="form-control" multiple>
           {% for student in students %}
             <option value="{{ student.id }}" 
@@ -24,7 +25,7 @@
       <div class="form-group">
         <label for="attempts">Number of Attempts Allowed:</label>
         <input type="number" id="attempts" name="attempts" class="form-control" 
-               min="1" value="{{ quiz.attempts_allowed }}">
+               min="1" value="{{ quiz.max_attempts }}">
       </div>
 
       <div class="form-group">
@@ -41,50 +42,6 @@
       {% for question in quiz.questions.all %}
         <li class="list-group-item">
           {{ question.text }}
-
-          {% if question.question_type == 'MCQ' %}
-            {% with mcq=question.mcqquestion %}
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">Choice 1: {{ mcq.choice1 }}</li>
-                <li class="list-group-item">Choice 2: {{ mcq.choice2 }}</li>
-                <li class="list-group-item">Choice 3: {{ mcq.choice3 }}</li>
-                <li class="list-group-item">Choice 4: {{ mcq.choice4 }}</li>
-                <li class="list-group-item">Correct Answer: {{ mcq.get_correct_answer_display }}</li>
-              </ul>
-            {% endwith %}
-          
-          {% elif question.question_type == 'MULTI_CORRECT' %}
-            {% with multi=question.multicorrectquestion %}
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">Choice 1: {{ multi.choice1 }}</li>
-                <li class="list-group-item">Choice 2: {{ multi.choice2 }}</li>
-                <li class="list-group-item">Choice 3: {{ multi.choice3 }}</li>
-                <li class="list-group-item">Choice 4: {{ multi.choice4 }}</li>
-                <li class="list-group-item">Correct Answers: {{ multi.correct_answers }}</li>
-              </ul>
-            {% endwith %}
-
-          {% elif question.question_type == 'SHORT' %}
-            {% with short=question.shortanswerquestion %}
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">Correct Answer: {{ short.correct_answer }}</li>
-              </ul>
-            {% endwith %}
-
-          {% elif question.question_type == 'TRUE_FALSE' %}
-            {% with tf=question.truefalsequestion %}
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">Correct Answer: {{ tf.correct_answer|yesno:"True,False" }}</li>
-              </ul>
-            {% endwith %}
-
-          {% elif question.question_type == 'FILL_BLANK' %}
-            {% with fill=question.fillintheblankquestion %}
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">Correct Answers: {{ fill.correct_answers }}</li>
-              </ul>
-            {% endwith %}
-          {% endif %}
 
           <div class="float-right">
             <a href="{% url 'delete_question' question.pk %}" class="btn btn-sm btn-danger">Delete</a>
@@ -103,6 +60,15 @@
     <p class="mt-3">
       <a href="{% url 'delete_quiz' quiz.pk %}" class="btn btn-danger">Delete Quiz</a>
     </p>
-
   </div>
+
+  <script>
+    // JavaScript to handle "Select All" functionality
+    document.getElementById('selectAll').addEventListener('click', function() {
+      const studentsSelect = document.getElementById('students');
+      for (let i = 0; i < studentsSelect.options.length; i++) {
+        studentsSelect.options[i].selected = true;
+      }
+    });
+  </script>
 {% endblock %}

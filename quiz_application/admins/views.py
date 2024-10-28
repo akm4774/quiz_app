@@ -20,12 +20,16 @@ def create_quiz(request):
     if request.method == 'POST':
         form = QuizForm(request.POST)
         if form.is_valid():
-            quiz = form.save()  # Save the quiz and get the instance
-            return redirect('create_question', quiz_id=quiz.id)  # Redirect to add questions for the quiz
+            quiz = form.save()
+            # Set the selected students for this quiz
+            selected_students = request.POST.getlist('students')
+            quiz.allowed_students.set(selected_students)
+            return redirect('create_question', quiz_id=quiz.id)
     else:
         form = QuizForm()
 
-    return render(request, 'admins/create_quiz.html', {'form': form})
+    students = Student.objects.all()  # Fetch all students for the selection
+    return render(request, 'admins/create_quiz.html', {'form': form, 'students': students})
 
 
 @login_required
@@ -33,12 +37,13 @@ def create_question(request, quiz_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id)
 
     if request.method == 'POST':
-        form = QuestionForm(request.POST)  # Assume you have a form for questions
+        form = QuestionForm(request.POST)  # Generic question form
         if form.is_valid():
             question = form.save(commit=False)
             question.quiz = quiz  # Associate the new question with the quiz
             question.save()
-            return redirect('edit_quiz', pk=quiz_id)  # Redirect to quiz edit page
+            # Redirect to create_specific_question view for further details
+            return redirect('create_specific_question', question_id=question.id)
 
     else:
         form = QuestionForm()
@@ -48,38 +53,42 @@ def create_question(request, quiz_id):
 @login_required
 def create_specific_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
-    
-    # Determine which form to show based on question type
+
+    # Determine the specific model class and form based on question type
+    specific_question_model = None
     form_class = None
+
     if question.question_type == 'MCQ':
+        specific_question_model = MCQQuestion
         form_class = MCQForm
     elif question.question_type == 'MULTI_CORRECT':
+        specific_question_model = MultiCorrectQuestion
         form_class = MultiCorrectForm
     elif question.question_type == 'SHORT':
+        specific_question_model = ShortAnswerQuestion
         form_class = ShortAnswerForm
     elif question.question_type == 'TRUE_FALSE':
+        specific_question_model = TrueFalseQuestion
         form_class = TrueFalseForm
     elif question.question_type == 'FILL_BLANK':
+        specific_question_model = FillInTheBlankQuestion
         form_class = FillInTheBlankForm
 
-    if request.method == 'POST':
-        if form_class:
-            form = form_class(request.POST)
-            if form.is_valid():
-                # Save the specific question model (MCQ, MultiCorrect, etc.)
-                specific_question = form.save(commit=False)
-                specific_question.question = question
-                specific_question.save()
-                print(f'Successfully saved: {specific_question}')  # Debugging: Confirm save
-                return redirect('edit_quiz', pk=question.quiz.id)
-            else:
-                print("Form is not valid:", form.errors)  # Debugging: Show form errors in console
-        else:
-            print("No form class found for the question type.")
-            return redirect('edit_quiz', pk=question.quiz.id)
+    # Check if a specific question already exists for this question
+    specific_question = None
+    if specific_question_model:
+        specific_question = specific_question_model.objects.filter(question=question).first()
 
+    if request.method == 'POST':
+        # Use the existing specific question instance or create a new one if it doesn't exist
+        form = form_class(request.POST, instance=specific_question)
+        if form.is_valid():
+            specific_instance = form.save(commit=False)
+            specific_instance.question = question  # Associate with the parent question
+            specific_instance.save()
+            return redirect('edit_quiz', pk=question.quiz.id)
     else:
-        form = form_class() if form_class else None
+        form = form_class(instance=specific_question)
 
     return render(request, 'admins/create_specific_question.html', {
         'form': form,
@@ -96,15 +105,13 @@ def edit_quiz(request, pk):
             # Update allowed students for the quiz
             selected_students = request.POST.getlist('students')
             quiz.allowed_students.set(selected_students)
-            quiz.save()
             return redirect('admin_dashboard')
     else:
         form = QuizForm(instance=quiz)
 
-    # Get all students for selection in the form
     students = Student.objects.all()
     questions = quiz.questions.all()
-    
+
     return render(request, 'admins/edit_quiz.html', {
         'form': form,
         'quiz': quiz,
@@ -112,20 +119,24 @@ def edit_quiz(request, pk):
         'students': students
     })
 @login_required
-def edit_question(request, quiz_id, question_id):
-    quiz = get_object_or_404(Quiz, pk=quiz_id)
-    question = get_object_or_404(Question, pk=question_id)
+def edit_question(request, quiz_pk, question_pk):
+    quiz = get_object_or_404(Quiz, pk=quiz_pk)
+    question = get_object_or_404(Question, pk=question_pk, quiz=quiz)
 
     if request.method == 'POST':
         form = QuestionForm(request.POST, instance=question)
         if form.is_valid():
-            form.save()
-            return redirect('edit_quiz', pk=quiz_id)  # Redirect back to quiz edit page
-
+            question = form.save()
+            # Redirect to edit the specific question type details
+            return redirect('create_specific_question', question_id=question.pk)
     else:
         form = QuestionForm(instance=question)
 
-    return render(request, 'admins/edit_question.html', {'form': form, 'quiz': quiz, 'question': question})
+    return render(request, 'admins/edit_question.html', {
+        'form': form,
+        'quiz': quiz,
+        'question': question,
+    })
 
 
 @login_required

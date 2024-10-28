@@ -8,12 +8,13 @@
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}
-      
+
       <div class="form-group">
         <label for="students">Select Students Allowed to Take Quiz:</label>
+        <button type="button" id="selectAll" class="btn btn-sm btn-secondary mb-2">Select All</button>
         <select name="students" id="students" class="form-control" multiple>
           {% for student in students %}
-            <option value="{{ student.id }}">{{ student.username }}</option>
+            <option value="{{ student.id }}">{{ student.user }}</option>
           {% endfor %}
         </select>
       </div>
@@ -31,4 +32,14 @@
       <button type="submit" class="btn btn-primary">Create Quiz</button>
     </form>
   </div>
+
+  <script>
+    // JavaScript to handle "Select All" functionality
+    document.getElementById('selectAll').addEventListener('click', function() {
+      const studentsSelect = document.getElementById('students');
+      for (let i = 0; i < studentsSelect.options.length; i++) {
+        studentsSelect.options[i].selected = true;
+      }
+    });
+  </script>
 {% endblock %}
