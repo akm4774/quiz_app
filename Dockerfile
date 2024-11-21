@@ -1,30 +1,32 @@
-# Use an official Python runtime as a parent image
+# Base image
 FROM python:3.10-slim
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    gcc \
-    default-libmysqlclient-dev \
     pkg-config \
-    --no-install-recommends && rm -rf /var/lib/apt/lists/*
+    gcc \
+    libmariadb-dev \
+    libmariadb-dev-compat \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file
-COPY requirements.txt /app/
+COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+# Add wait-for-it script to the image
+ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
 
-# Copy the application code into the container
-COPY . /app/
+# Copy the project files
+COPY . .
 
-# Expose the application port (change if necessary)
+# Expose the application port
 EXPOSE 10000
 
-# Command to run the application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:$PORT"]
+# Default command
+CMD ["python", "manage.py", "runserver", "0.0.0.0:10000"]

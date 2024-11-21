@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sqlc
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password  # Change to a secure password
+      MYSQL_DATABASE: student_details
+      MYSQL_USER: supreme_leader
+      MYSQL_PASSWORD: A!@#$%^123456
+    ports:
+      - "3307:3306"  # Map MySQL container port to host
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - quiz_app_network
+
+  django:
+    build:
+      context: .  # Refers to the current directory
+      dockerfile: Dockerfile  # Ensure the Dockerfile exists
+    container_name: quiz
+    restart: always
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: mysql  # Refers to the service name in this file
+      DB_PORT: ${DB_PORT}
+    ports:
+      - "10000:10000"  # Map Django app port to host
+    depends_on:
+      - mysql
+    networks:
+      - quiz_app_network
+    command: >
+      sh -c "
+      /wait-for-it.sh mysql:3306 --timeout=30 --strict -- &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:10000
+      "
+
+volumes:
+  mysql_data:  # Named volume to persist MySQL data
+
+networks:
+  quiz_app_network:
