@@ -3,12 +3,14 @@
 {% block title %}Quiz History{% endblock %}
 
 {% block content %}
-  <h2>Quiz History</h2>
-  <ul>
+  <h2 class="mt-4 mb-4">Quiz History</h2>
+  <ul class="list-group">
     {% for result in quiz_results %}
-      <li>
-        <strong>{{ result.quiz.title }}</strong> - Score: {{ result.score }}%
-        <a href="{% url 'quiz_review' result.id %}">Review</a>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ result.quiz.title }}</strong> - Score: {{ result.score }}%
+        </div>
+        <a class="btn btn-primary btn-sm" href="{% url 'quiz_review' result.id %}">Review</a>
       </li>
     {% endfor %}
   </ul>

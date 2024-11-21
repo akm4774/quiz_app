@@ -4,8 +4,8 @@
 <div class="container">
     <h1 class="display-4">Quiz Performance: {{ quiz.title }}</h1>
     <hr>
-
-    <h3>Student Performance</h3>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+    <h3>Student Performances</h3>
 
     {% if student_data %}
         <table class="table table-striped">

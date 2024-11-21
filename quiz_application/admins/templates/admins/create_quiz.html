@@ -1,45 +1,58 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-  <div class="container">
+<div class="container">
     <h1 class="display-4">Create Quiz</h1>
     <hr>
 
     <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
+        {% csrf_token %}
+        {{ form.as_p }}
 
-      <div class="form-group">
-        <label for="students">Select Students Allowed to Take Quiz:</label>
-        <button type="button" id="selectAll" class="btn btn-sm btn-secondary mb-2">Select All</button>
-        <select name="students" id="students" class="form-control" multiple>
-          {% for student in students %}
-            <option value="{{ student.id }}">{{ student.user }}</option>
-          {% endfor %}
-        </select>
-      </div>
+        <div class="form-group">
+            <label>Select Students Allowed to Take Quiz:</label>
+            <div class="mb-2">
+                <button type="button" id="selectAll" class="btn btn-sm btn-secondary">Select All</button>
+                <button type="button" id="deselectAll" class="btn btn-sm btn-secondary">Deselect All</button>
+            </div>
+            <div class="form-check">
+                {% for student in students %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="student_{{ student.id }}" name="students" value="{{ student.id }}">
+                        <label class="form-check-label" for="student_{{ student.id }}">{{ student.user }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
 
-      <div class="form-group">
-        <label for="attempts">Number of Attempts Allowed:</label>
-        <input type="number" id="attempts" name="attempts" class="form-control" min="1" value="1">
-      </div>
+        <div class="form-group">
+            <label for="attempts">Number of Attempts Allowed:</label>
+            <input type="number" id="attempts" name="attempts" class="form-control" min="1" value="1">
+        </div>
 
-      <div class="form-group">
-        <label for="duration">Quiz Duration (minutes):</label>
-        <input type="number" id="duration" name="duration" class="form-control" min="1">
-      </div>
+        <div class="form-group">
+            <label for="duration">Quiz Duration (minutes):</label>
+            <input type="number" id="duration" name="duration" class="form-control" min="1">
+        </div>
 
-      <button type="submit" class="btn btn-primary">Create Quiz</button>
+        <button type="submit" class="btn btn-primary">Create Quiz</button>
     </form>
-  </div>
+</div>
 
-  <script>
-    // JavaScript to handle "Select All" functionality
+<script>
+    // JavaScript to handle "Select All" and "Deselect All" functionality
     document.getElementById('selectAll').addEventListener('click', function() {
-      const studentsSelect = document.getElementById('students');
-      for (let i = 0; i < studentsSelect.options.length; i++) {
-        studentsSelect.options[i].selected = true;
-      }
+        const checkboxes = document.querySelectorAll('input[name="students"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
     });
-  </script>
+
+    document.getElementById('deselectAll').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('input[name="students"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    });
+</script>
 {% endblock %}

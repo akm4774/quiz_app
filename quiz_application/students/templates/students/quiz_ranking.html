@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h1 class="display-4">Quiz Ranking: {{ quiz.title }}</h1>
-
+    <a href="{% url 'available_quizzes' %}" class="btn btn-secondary mb-3">Back to Available Quizzes</a>
     <p><strong>Your Rank:</strong> {{ rank }}</p>
     <p><strong>Highest Score:</strong> {{ max_score }}</p>
     <p><strong>Average Score:</strong> {{ avg_score }}</p>
@@ -32,6 +32,6 @@
         </tbody>
     </table>
 
-    <a href="{% url 'available_quizzes' %}">Back to Available Quizzes</a>
+    
 </div>
 {% endblock %}
