@@ -20,4 +20,5 @@ urlpatterns = [
 
     # Quiz Performance View
     path('quiz/<int:quiz_id>/performance/', views.quiz_performance, name='quiz_performance'),  # Performance analysis
+    path('upload-quiz/', views.upload_quiz, name='upload_quiz'),
 ]

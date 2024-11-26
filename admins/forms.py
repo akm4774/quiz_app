@@ -1,7 +1,7 @@
 from django import forms
 from .models import (
     Quiz, Question, MCQQuestion, ShortAnswerQuestion, 
-    TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion
+    TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion, QuizUpload
 )
 
 class QuizForm(forms.ModelForm):
@@ -61,3 +61,8 @@ class FillInTheBlankForm(forms.ModelForm):
         if not answers:
             raise forms.ValidationError("You must provide at least one correct answer.")
         return answers
+
+class QuizUploadForm(forms.ModelForm):
+    class Meta:
+        model = QuizUpload
+        fields = ['file', 'quiz_name', 'description', 'due_date']

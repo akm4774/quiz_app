@@ -21,6 +21,8 @@ services:
     build:
       context: .  # Refers to the current directory
       dockerfile: Dockerfile  # Ensure the Dockerfile exists
+    volumes:
+      - .:/app
     container_name: quiz
     restart: always
     env_file:

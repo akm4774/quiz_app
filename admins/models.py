@@ -83,3 +83,10 @@ class FillInTheBlankQuestion(models.Model):
         if not isinstance(self.correct_answers, list):
             raise ValueError("Correct answers must be a list")
         super().save(*args, **kwargs)
+
+class QuizUpload(models.Model):
+    file = models.FileField(upload_to='uploads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    quiz_name = models.CharField(max_length=255, default="default_quiz_name")
+    description = models.TextField(default="")  # Add description for the quiz
+    due_date = models.DateTimeField(default=one_day_from_now)  # Optional field for the quiz due date

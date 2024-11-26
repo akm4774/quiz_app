@@ -2,14 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import (
     QuizForm, QuestionForm, MCQForm, ShortAnswerForm, 
-    TrueFalseForm, MultiCorrectForm, FillInTheBlankForm
+    TrueFalseForm, MultiCorrectForm, FillInTheBlankForm, QuizUploadForm
 )
 from .models import (
     Quiz, Question, MCQQuestion, ShortAnswerQuestion, 
     TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion
 )
 from students.models import QuizResult, Student
-
+import csv
+import logging
 @login_required
 def admin_dashboard(request):
     quizzes = Quiz.objects.all()
@@ -170,3 +171,79 @@ def quiz_performance(request, quiz_id):
         'quiz': quiz,
         'student_data': student_data
     })
+
+
+
+
+logger = logging.getLogger(__name__)
+
+def upload_quiz(request):
+    if request.method == 'POST':  # When user submits the form
+        form = QuizUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                # Retrieve the form data
+                file = request.FILES['file']
+                quiz_name = form.cleaned_data.get('quiz_name')
+                description = form.cleaned_data.get('description')
+                due_date = form.cleaned_data.get('due_date')
+
+                # Create a new quiz
+                quiz = Quiz.objects.create(
+                    title=quiz_name,
+                    description=description,
+                    due_date=due_date,
+                    is_available_to_students=True,  # Default value
+                    max_attempts=1,  # Default value
+                    duration=30  # Default value
+                )
+
+                # Process the uploaded CSV file
+                decoded_file = file.read().decode('utf-8').splitlines()
+                reader = csv.reader(decoded_file)
+
+                # Iterate through each row in the CSV
+                for index, row in enumerate(reader):
+                    # Skip the header row
+                    if index == 0:
+                        continue
+
+                    # Ensure the row has the correct number of fields
+                    if len(row) != 6:
+                        raise ValueError(f"Row {index + 1} does not have 6 columns.")
+
+                    # Extract data from the row
+                    question_text, choice1, choice2, choice3, choice4, correct_answer = row
+
+                    # Validate the correct answer
+                    valid_answers = {'choice1', 'choice2', 'choice3', 'choice4'}
+                    if correct_answer not in valid_answers:
+                        raise ValueError(f"Row {index + 1}: Invalid correct answer '{correct_answer}'.")
+
+                    # Create the Question and MCQQuestion
+                    question = Question.objects.create(
+                        quiz=quiz,
+                        text=question_text,
+                        question_type='MCQ',  # Ensure it's an MCQ question
+                    )
+                    MCQQuestion.objects.create(
+                        question=question,
+                        choice1=choice1,
+                        choice2=choice2,
+                        choice3=choice3,
+                        choice4=choice4,
+                        correct_answer=correct_answer,
+                    )
+
+                return redirect('admin_dashboard')  # Redirect to the quiz list view
+
+            except Exception as e:
+                logger.error(f"Error processing the file: {e}")
+                return render(request, 'admins/upload_quiz.html', {
+                    'form': form,
+                    'error': f"An error occurred while processing the file: {str(e)}",
+                })
+    else:  # For GET requests, display the form
+        form = QuizUploadForm()
+
+    return render(request, 'admins/upload_quiz.html', {'form': form})

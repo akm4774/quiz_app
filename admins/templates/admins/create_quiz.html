@@ -35,7 +35,10 @@
             <input type="number" id="duration" name="duration" class="form-control" min="1">
         </div>
 
-        <button type="submit" class="btn btn-primary">Create Quiz</button>
+        <div class="form-group d-flex">
+            <button type="submit" class="btn btn-primary">Create Quiz</button>
+            <a href="{% url 'upload_quiz' %}" class="btn btn-secondary ml-2">Upload Docu</a>
+        </div>
     </form>
 </div>
 
