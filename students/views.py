@@ -19,7 +19,6 @@ from django.db.models import Avg, Count, Max
 from collections import defaultdict
 import io
 import sys
-@login_required
 def take_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
     student = request.user.student
@@ -28,7 +27,7 @@ def take_quiz(request, quiz_id):
     if student not in quiz.allowed_students.all():
         return render(request, 'students/quiz_access_denied.html')
 
-    # Check attempt limits
+    # Check how many attempts the student has already made
     attempts = QuizResult.objects.filter(student=student, quiz=quiz).count()
     if attempts >= quiz.max_attempts:
         return render(request, 'students/max_attempts_reached.html')
@@ -43,10 +42,7 @@ def take_quiz(request, quiz_id):
         return render(request, 'students/quiz_time_exceeded.html')
 
     questions = quiz.questions.all()
-    non_coding_questions = questions.exclude(question_type='CODING')
-    coding_questions = questions.filter(question_type='CODING')
-    if coding_questions.exists():
-        return redirect('submit_coding_question', question_id=coding_questions.first().id)
+    non_coding_questions = questions.exclude(question_type='CODING')  # Separate coding questions
 
     if request.method == 'POST':
         score = 0
@@ -83,15 +79,15 @@ def take_quiz(request, quiz_id):
             if is_correct:
                 score += 1
 
-        # Save quiz progress excluding coding questions
-        score_percentage = (score / non_coding_questions.count()) * 100 if non_coding_questions.exists() else 0.00
+        score_percentage = (score / questions.count()) * 100
 
+        # Save the quiz result with the attempt number
         QuizResult.objects.create(
             student=student,
             quiz=quiz,
             score=score_percentage,
             taken_at=timezone.now(),
-            attempt_number=attempts + 1
+            attempt_number=attempts + 1  # Increment the attempt number
         )
 
         return redirect('quiz_history')
@@ -99,9 +95,8 @@ def take_quiz(request, quiz_id):
     return render(request, 'students/take_quiz.html', {
         'quiz': quiz,
         'non_coding_questions': non_coding_questions,
-        'coding_questions': coding_questions
+        'coding_questions': questions.filter(question_type='CODING')  # Pass coding questions separately
     })
-
 @login_required
 def quiz_history(request):
     student = request.user.student
@@ -312,8 +307,8 @@ def submit_coding_question(request, question_id):
                 }
             )
 
-            print(f"Redirecting to review page for QuizResult ID: {quiz_result.id}")
-            return redirect('quiz_review', quiz_result_id=quiz_result.id)
+            print(f"Redirecting to review page for QuizResult ID: {quiz.id}")
+            return redirect('take_quiz', quiz_id=question.quiz.id)
 
 
     return render(request, 'students/submit_coding_question.html', {
