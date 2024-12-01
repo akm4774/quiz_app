@@ -1,7 +1,7 @@
 from django import forms
 from .models import (
     Quiz, Question, MCQQuestion, ShortAnswerQuestion, 
-    TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion, QuizUpload
+    TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion, QuizUpload, CodingQuestion
 )
 
 class QuizForm(forms.ModelForm):
@@ -66,3 +66,33 @@ class QuizUploadForm(forms.ModelForm):
     class Meta:
         model = QuizUpload
         fields = ['file', 'quiz_name', 'description', 'due_date']
+
+class CodingQuestionForm(forms.ModelForm):
+    test_case_1_input = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Enter Test Case 1 Input"}),
+        help_text="Provide the input for Test Case 1 (JSON format for complex data)."
+    )
+    test_case_1_output = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Enter Test Case 1 Expected Output"}),
+        help_text="Provide the expected output for Test Case 1."
+    )
+    test_case_2_input = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Enter Test Case 2 Input"}),
+        help_text="Provide the input for Test Case 2 (JSON format for complex data)."
+    )
+    test_case_2_output = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Enter Test Case 2 Expected Output"}),
+        help_text="Provide the expected output for Test Case 2."
+    )
+
+    class Meta:
+        model = CodingQuestion
+        fields = [
+            'problem_statement',
+            'function_name',
+            'test_case_1_input',
+            'test_case_1_output',
+            'test_case_2_input',
+            'test_case_2_output'
+        ]
+

@@ -1,37 +1,99 @@
 {% extends 'students/base.html' %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container">
     <h1 class="display-4">Quiz Review</h1>
     <a href="{% url 'quiz_history' %}" class="btn btn-secondary mb-3">Back to Quiz History</a>
 
+    <!-- Table for Non-Coding Questions -->
+    <h2>Non-Coding Questions</h2>
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>Question</th>
                 <th>Your Answer</th>
                 <th>Correct Answer</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
             {% for answer in student_answers %}
+                {% if answer.question.question_type != 'CODING' %}
+                    <tr>
+                        <td>{{ answer.question.text }}</td>
+                        <td>{{ answer.answer }}</td>
+                        <td>
+                            {% if answer.question.question_type == 'MCQ' %}
+                                {{ answer.question.mcqquestion.correct_answer }}
+                            {% elif answer.question.question_type == 'TRUE_FALSE' %}
+                                {{ answer.question.truefalsequestion.correct_answer }}
+                            {% elif answer.question.question_type == 'SHORT' %}
+                                {{ answer.question.shortanswerquestion.correct_answer }}
+                            {% elif answer.question.question_type == 'FILL_BLANK' %}
+                                {{ answer.question.fillintheblankquestion.correct_answers|join:", " }}
+                            {% elif answer.question.question_type == 'MULTI_CORRECT' %}
+                                {{ answer.question.multicorrectquestion.correct_answers|join:", " }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if answer.is_correct %}
+                                <span class="text-success">Correct</span>
+                            {% else %}
+                                <span class="text-danger">Incorrect</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Table for Coding Questions -->
+    <h2>Coding Questions</h2>
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
-                <td>{{ answer.question.text }}</td>
-                <td>{{ answer.answer }}</td>
-                <td>
-                    {% if answer.question.question_type == 'MCQ' %}
-                        {{ answer.question.mcqquestion.correct_answer }}
-                    {% elif answer.question.question_type == 'TRUE_FALSE' %}
-                        {{ answer.question.truefalsequestion.correct_answer }}
-                    {% elif answer.question.question_type == 'SHORT' %}
-                        {{ answer.question.shortanswerquestion.correct_answer }}
-                    {% elif answer.question.question_type == 'FILL_BLANK' %}
-                        {{ answer.question.fillintheblankquestion.correct_answers|join:", " }}
-                    {% elif answer.question.question_type == 'MULTI_CORRECT' %}
-                        {{ answer.question.multicorrectquestion.correct_answers|join:", " }}
-                    {% endif %}
-                </td>
+                <th>Question</th>
+                <th>Your Code</th>
+                <th>Feedback</th>
+                <th>Status</th>
             </tr>
+        </thead>
+        <tbody>
+            {% for answer in student_answers %}
+                {% if answer.question.question_type == 'CODING' %}
+                    {% with coding_submission=coding_answers|get_item:answer.question.id %}
+                        <tr>
+                            <td>{{ answer.question.text }}</td>
+                            <td>
+                                {% if coding_submission %}
+                                    <pre>{{ coding_submission.submitted_code }}</pre>
+                                {% else %}
+                                    <span>No submission</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if coding_submission %}
+                                    {{ coding_submission.feedback }}
+                                {% else %}
+                                    No feedback available
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if coding_submission %}
+                                    {% if coding_submission.is_correct %}
+                                        <span class="text-success">Correct</span>
+                                    {% else %}
+                                        <span class="text-danger">Incorrect</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-warning">Not Submitted</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endwith %}
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>

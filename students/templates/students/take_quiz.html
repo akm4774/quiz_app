@@ -1,29 +1,37 @@
 {% extends "students/base.html" %}
 
-{% block title %}
-Take Quiz
-{% endblock %}
-
 {% block content %}
-  <h2>{{ quiz.title }}</h2>
-  <form method="POST">
+<h2>{{ quiz.title }}</h2>
+<p>{{ quiz.description }}</p>
+
+<form method="post">
     {% csrf_token %}
-    {% for question in quiz.questions.all %}
-      <div>
-        <p>{{ question.text }}</p>
-        {% if question.question_type == 'MCQ' %}
-          <input type="radio" name="question_{{ question.id }}" value="{{ question.mcqquestion.choice1 }}"> {{ question.mcqquestion.choice1 }}<br>
-          <input type="radio" name="question_{{ question.id }}" value="{{ question.mcqquestion.choice2 }}"> {{ question.mcqquestion.choice2 }}<br>
-          <input type="radio" name="question_{{ question.id }}" value="{{ question.mcqquestion.choice3 }}"> {{ question.mcqquestion.choice3 }}<br>
-          <input type="radio" name="question_{{ question.id }}" value="{{ question.mcqquestion.choice4 }}"> {{ question.mcqquestion.choice4 }}<br>
-        {% elif question.question_type == 'TRUE_FALSE' %}
-          <input type="radio" name="question_{{ question.id }}" value="True"> True<br>
-          <input type="radio" name="question_{{ question.id }}" value="False"> False<br>
-        {% elif question.question_type == 'SHORT' %}
-          <input type="text" name="question_{{ question.id }}" placeholder="Your answer">
-        {% endif %}
-      </div>
+    {% for question in non_coding_questions %}
+        <div>
+            <p>{{ question.text }}</p>
+            {% if question.question_type == 'MCQ' %}
+                <!-- Render MCQ options -->
+            {% elif question.question_type == 'TRUE_FALSE' %}
+                <!-- Render True/False options -->
+            {% elif question.question_type == 'SHORT' %}
+                <!-- Render Short Answer input -->
+            {% elif question.question_type == 'FILL_BLANK' %}
+                <!-- Render Fill-in-the-Blank input -->
+            {% elif question.question_type == 'MULTI_CORRECT' %}
+                <!-- Render Multi-Correct options -->
+            {% endif %}
+        </div>
     {% endfor %}
+
     <button type="submit">Submit Quiz</button>
-  </form>
+</form>
+
+<h3>Coding Questions</h3>
+{% for coding_question in coding_questions %}
+    <div>
+        <p>{{ coding_question.text }}</p>
+        <a class="btn btn-primary btn-sm" href="{% url 'submit_coding_question' coding_question.id %}" class="btn btn-primary">Solve Coding Question</a>
+    </div>
+{% endfor %}
+
 {% endblock %}

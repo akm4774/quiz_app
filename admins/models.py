@@ -13,8 +13,8 @@ class Quiz(models.Model):
     due_date = models.DateTimeField(default=one_day_from_now)
     is_available_to_students = models.BooleanField(default=True)
     allowed_students = models.ManyToManyField('students.Student', blank=True)  # Allow selection of students
-    max_attempts = models.PositiveIntegerField(default=1)  # Maximum allowed attempts
-    duration = models.PositiveIntegerField(default=30)  # Duration in minutes
+    max_attempts = models.PositiveIntegerField(default=5)  # Maximum allowed attempts
+    duration = models.PositiveIntegerField(default=60)  # Duration in minutes
 
     def __str__(self):
         return self.title
@@ -26,6 +26,7 @@ class Question(models.Model):
         ('SHORT', 'Short Answer'),
         ('TRUE_FALSE', 'True/False'),
         ('FILL_BLANK', 'Fill-in-the-Blank'),
+        ('CODING', 'Coding'),
     ]
 
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
@@ -90,3 +91,15 @@ class QuizUpload(models.Model):
     quiz_name = models.CharField(max_length=255, default="default_quiz_name")
     description = models.TextField(default="")  # Add description for the quiz
     due_date = models.DateTimeField(default=one_day_from_now)  # Optional field for the quiz due date
+
+class CodingQuestion(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    problem_statement = models.TextField()  # Description of the coding problem
+    function_name = models.CharField(max_length=255)  # Name of the function to be implemented
+    test_case_1_input = models.TextField()  # Input for Test Case 1 (JSON formatted for complex data)
+    test_case_1_output = models.TextField()  # Expected Output for Test Case 1
+    test_case_2_input = models.TextField()  # Input for Test Case 2
+    test_case_2_output = models.TextField()  # Expected Output for Test Case 2
+
+    def __str__(self):
+        return f"Coding Question: {self.problem_statement[:50]}"

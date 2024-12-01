@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.urls import reverse_lazy
-from students.models import Student, QuizResult, StudentAnswer
+from students.models import Student, QuizResult, StudentAnswer, CodingSubmission
 from .forms import StudentProfileForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
@@ -14,9 +14,11 @@ from admins.models import Quiz
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from admins.views import admin_dashboard
-from admins.models import Quiz, Question
+from admins.models import Quiz, Question, CodingQuestion
 from django.db.models import Avg, Count, Max
-
+from collections import defaultdict
+import io
+import sys
 @login_required
 def take_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
@@ -26,7 +28,7 @@ def take_quiz(request, quiz_id):
     if student not in quiz.allowed_students.all():
         return render(request, 'students/quiz_access_denied.html')
 
-    # Check how many attempts the student has already made
+    # Check attempt limits
     attempts = QuizResult.objects.filter(student=student, quiz=quiz).count()
     if attempts >= quiz.max_attempts:
         return render(request, 'students/max_attempts_reached.html')
@@ -41,11 +43,16 @@ def take_quiz(request, quiz_id):
         return render(request, 'students/quiz_time_exceeded.html')
 
     questions = quiz.questions.all()
+    non_coding_questions = questions.exclude(question_type='CODING')
+    coding_questions = questions.filter(question_type='CODING')
+    if coding_questions.exists():
+        return redirect('submit_coding_question', question_id=coding_questions.first().id)
 
     if request.method == 'POST':
         score = 0
 
-        for question in questions:
+        # Process non-coding questions
+        for question in non_coding_questions:
             user_answer = request.POST.get(f'question_{question.id}')
             correct_answer = None
 
@@ -76,36 +83,51 @@ def take_quiz(request, quiz_id):
             if is_correct:
                 score += 1
 
-        score_percentage = (score / questions.count()) * 100
+        # Save quiz progress excluding coding questions
+        score_percentage = (score / non_coding_questions.count()) * 100 if non_coding_questions.exists() else 0.00
 
-        # Save the quiz result with the attempt number
         QuizResult.objects.create(
             student=student,
             quiz=quiz,
             score=score_percentage,
             taken_at=timezone.now(),
-            attempt_number=attempts + 1  # Increment the attempt number
+            attempt_number=attempts + 1
         )
 
         return redirect('quiz_history')
 
-    return render(request, 'students/take_quiz.html', {'quiz': quiz, 'questions': questions})
+    return render(request, 'students/take_quiz.html', {
+        'quiz': quiz,
+        'non_coding_questions': non_coding_questions,
+        'coding_questions': coding_questions
+    })
+
 @login_required
 def quiz_history(request):
     student = request.user.student
-    quiz_results = QuizResult.objects.filter(student=student)
-    return render(request, 'students/quiz_history.html', {'quiz_results': quiz_results})
-
+    quiz_results = QuizResult.objects.filter(student=student).order_by('-taken_at')
+    
+    return render(request, 'students/quiz_history.html', {
+        'quiz_results': quiz_results
+    })
 @login_required
 def quiz_review(request, quiz_result_id):
     quiz_result = get_object_or_404(QuizResult, id=quiz_result_id)
-    student_answers = StudentAnswer.objects.filter(
-        student=quiz_result.student, question__quiz=quiz_result.quiz
+    student = quiz_result.student
+
+    student_answers = StudentAnswer.objects.filter(student=student, question__quiz=quiz_result.quiz)
+
+    coding_submissions = CodingSubmission.objects.filter(
+        student=student, question__quiz=quiz_result.quiz
     )
+
+    # Map coding submissions by question ID
+    coding_answers = {submission.question.id: submission for submission in coding_submissions}
 
     return render(request, 'students/quiz_review.html', {
         'quiz_result': quiz_result,
-        'student_answers': student_answers
+        'student_answers': student_answers,
+        'coding_answers': coding_answers,
     })
 
 @login_required
@@ -196,4 +218,109 @@ def quiz_ranking(request, quiz_id):
         'rank': rank,
         'max_score': max_score,
         'avg_score': avg_score
+    })
+@login_required
+def submit_coding_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    coding_question = get_object_or_404(CodingQuestion, question=question)
+    student = request.user.student
+
+    submitted_code = request.POST.get('submitted_code', '')
+
+    # Default variable values
+    test_case_1_result = request.POST.get('test_case_1_result') == 'True'
+    test_case_2_result = request.POST.get('test_case_2_result') == 'True'
+    is_correct = request.POST.get('is_correct') == 'True'
+    feedback = request.POST.get('feedback', '')
+
+    def execute_code_with_input(code, input_string):
+        try:
+            input_lines = iter(input_string.splitlines())
+            global_scope = {"input": lambda: next(input_lines)}
+
+            output_capture = io.StringIO()
+            sys.stdout = output_capture
+            exec(code, global_scope)
+            sys.stdout = sys.__stdout__
+
+            return output_capture.getvalue().strip(), None
+        except Exception as e:
+            sys.stdout = sys.__stdout__
+            return None, str(e)
+
+    if request.method == 'POST':
+        if 'run_code' in request.POST:
+            # Run test cases
+            output1, error1 = execute_code_with_input(submitted_code, coding_question.test_case_1_input)
+            test_case_1_result = output1 == coding_question.test_case_1_output
+
+            output2, error2 = execute_code_with_input(submitted_code, coding_question.test_case_2_input)
+            test_case_2_result = output2 == coding_question.test_case_2_output
+
+            is_correct = test_case_1_result and test_case_2_result
+            feedback = "All test cases passed!" if is_correct else "One or more test cases failed."
+
+            if error1 or error2:
+                feedback += f"\nError: {error1 or error2}"
+
+            return render(request, 'students/submit_coding_question.html', {
+                'question': question,
+                'submitted_code': submitted_code,
+                'test_case_1_result': test_case_1_result,
+                'test_case_2_result': test_case_2_result,
+                'submitted_output_1': output1,
+                'submitted_output_2': output2,
+                'is_correct': is_correct,
+                'feedback': feedback,
+                'test_case_1_output': coding_question.test_case_1_output,
+                'test_case_2_output': coding_question.test_case_2_output,
+            })
+
+        elif 'submit_code' in request.POST:
+            # Save the submission
+            coding_submission = CodingSubmission.objects.create(
+                student=student,
+                question=question,
+                submitted_code=submitted_code,
+                is_correct=is_correct,
+                test_case_1_result=test_case_1_result,
+                test_case_2_result=test_case_2_result,
+                feedback=feedback,
+            )
+
+            # Save student answer
+            student_answer = StudentAnswer.objects.create(
+                student=student,
+                question=question,
+                answer=submitted_code,
+                is_correct=is_correct,
+            )
+            print(f"StudentAnswer created: {student_answer}")
+            # Recalculate quiz score if needed
+            quiz = question.quiz
+            student_answers = StudentAnswer.objects.filter(student=student, question__quiz=quiz)
+
+            # Calculate the quiz score
+            score = sum(1 for answer in student_answers if answer.is_correct)
+            score_percentage = (score / quiz.questions.count()) * 100 if quiz.questions.exists() else 0.00
+
+            quiz_result, created = QuizResult.objects.update_or_create(
+                student=student, quiz=quiz,
+                defaults={
+                    'score': score_percentage,
+                    'taken_at': timezone.now(),
+                }
+            )
+
+            print(f"Redirecting to review page for QuizResult ID: {quiz_result.id}")
+            return redirect('quiz_review', quiz_result_id=quiz_result.id)
+
+
+    return render(request, 'students/submit_coding_question.html', {
+        'question': question,
+        'submitted_code': submitted_code,
+        'test_case_1_result': test_case_1_result,
+        'test_case_2_result': test_case_2_result,
+        'is_correct': is_correct,
+        'feedback': feedback,
     })

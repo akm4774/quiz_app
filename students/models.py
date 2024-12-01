@@ -42,9 +42,22 @@ class QuizResult(models.Model):
 class StudentAnswer(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     question = models.ForeignKey('admins.Question', on_delete=models.CASCADE)
-    answer = models.CharField(max_length=255)
+    answer = models.CharField(max_length=5000)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         
         return f'{self.student.user.username} - {self.question.text}'
+
+class CodingSubmission(models.Model):
+    student = models.ForeignKey('Student', on_delete=models.CASCADE)
+    question = models.ForeignKey('admins.Question', on_delete=models.CASCADE)  # Links to CodingQuestion
+    submitted_code = models.TextField()  # Stores the student's submitted code
+    is_correct = models.BooleanField(default=False)
+    submission_time = models.DateTimeField(auto_now_add=True)
+    test_case_1_result = models.BooleanField(default=False)  # Result of test case 1
+    test_case_2_result = models.BooleanField(default=False)  # Result of test case 2
+    feedback = models.TextField(blank=True, null=True)  # Feedback or error message
+
+    def __str__(self):
+        return f"Submission by {self.student.user.username} for {self.question.text}"

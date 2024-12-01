@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import (
     QuizForm, QuestionForm, MCQForm, ShortAnswerForm, 
-    TrueFalseForm, MultiCorrectForm, FillInTheBlankForm, QuizUploadForm
+    TrueFalseForm, MultiCorrectForm, FillInTheBlankForm, QuizUploadForm, CodingQuestionForm
 )
 from .models import (
     Quiz, Question, MCQQuestion, ShortAnswerQuestion, 
-    TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion
+    TrueFalseQuestion, MultiCorrectQuestion, FillInTheBlankQuestion, CodingQuestion
 )
 from students.models import QuizResult, Student
 import csv
@@ -74,6 +74,9 @@ def create_specific_question(request, question_id):
     elif question.question_type == 'FILL_BLANK':
         specific_question_model = FillInTheBlankQuestion
         form_class = FillInTheBlankForm
+    elif question.question_type == 'CODING':
+        specific_question_model = CodingQuestion
+        form_class = CodingQuestionForm
 
     # Check if a specific question already exists for this question
     specific_question = None
@@ -215,10 +218,7 @@ def upload_quiz(request):
                     # Extract data from the row
                     question_text, choice1, choice2, choice3, choice4, correct_answer = row
 
-                    # Validate the correct answer
-                    valid_answers = {'choice1', 'choice2', 'choice3', 'choice4'}
-                    if correct_answer not in valid_answers:
-                        raise ValueError(f"Row {index + 1}: Invalid correct answer '{correct_answer}'.")
+                   
 
                     # Create the Question and MCQQuestion
                     question = Question.objects.create(

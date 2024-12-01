@@ -1,0 +1,87 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<pre>
+    Test Case 1 Result: {{ test_case_1_result }}
+    Test Case 2 Result: {{ test_case_2_result }}
+    Feedback: {{ feedback }}
+    Is Correct: {{ is_correct }}
+</pre>
+<div class="container">
+    <h2>{{ question.text }}</h2>
+    <p>{{ coding_question.problem_statement }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Code Editor -->
+        <textarea 
+            name="submitted_code" 
+            rows="15" 
+            cols="80" 
+            placeholder="Write your code here..." 
+            required>{{ submitted_code }}</textarea>
+        <br>
+
+        <!-- Hidden Fields for State Persistence -->
+        <input type="hidden" name="test_case_1_result" value="{{ test_case_1_result }}">
+        <input type="hidden" name="test_case_2_result" value="{{ test_case_2_result }}">
+        <input type="hidden" name="feedback" value="{{ feedback }}">
+        <input type="hidden" name="submitted_output_1" value="{{ submitted_output_1 }}">
+        <input type="hidden" name="submitted_output_2" value="{{ submitted_output_2 }}">
+        <input type="hidden" name="is_correct" value="{{ is_correct }}">
+
+        <!-- Buttons -->
+        <button type="submit" name="run_code" class="btn btn-primary">Run Code</button>
+        <button type="submit" name="submit_code" class="btn btn-success">Submit Code</button>
+    </form>
+
+    <!-- Back to Quiz Button -->
+    <a href="{% url 'take_quiz' question.quiz.id %}" class="btn btn-secondary mt-3">Back to Quiz</a>
+
+    <!-- Results Section -->
+{% if test_case_1_result is not None %}
+<div class="mt-4">
+    <h3>Results</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Test Case</th>
+                <th>Expected Output</th>
+                <th>Your Output</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Test Case 1</td>
+                <td>{{ test_case_1_output }}</td>
+                <td>{{ submitted_output_1 }}</td>
+                <td>
+                    {% if test_case_1_result %}
+                        <span class="text-success">Passed</span>
+                    {% else %}
+                        <span class="text-danger">Failed</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Test Case 2</td>
+                <td>{{ test_case_2_output }}</td>
+                <td>{{ submitted_output_2 }}</td>
+                <td>
+                    {% if test_case_2_result %}
+                        <span class="text-success">Passed</span>
+                    {% else %}
+                        <span class="text-danger">Failed</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>Feedback:</strong> {{ feedback }}</p>
+</div>
+{% endif %}
+
+</div>
+{% endblock %}
