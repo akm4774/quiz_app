@@ -178,6 +178,15 @@ def submit_coding_question(request, question_id):
                 'test_case_2_result': test_case_2_result,
                 'feedback': feedback,
             }
+            CodingSubmission.objects.create(
+            student=student,
+            question=question,
+            submitted_code=submitted_code,
+            is_correct=is_correct,
+            test_case_1_result=test_case_1_result,
+            test_case_2_result=test_case_2_result,
+            feedback=feedback,
+        )
             request.session['coding_results'] = coding_results
 
             # Redirect to the take_quiz view
@@ -205,15 +214,22 @@ def quiz_review(request, quiz_result_id):
     quiz_result = get_object_or_404(QuizResult, id=quiz_result_id)
     student = quiz_result.student
 
-    student_answers = StudentAnswer.objects.filter(student=student, question__quiz=quiz_result.quiz)
+    # Fetch student answers for the quiz
+    student_answers = StudentAnswer.objects.filter(
+        student=student,
+        question__quiz=quiz_result.quiz
+    )
 
+    # Fetch coding submissions for the quiz
     coding_submissions = CodingSubmission.objects.filter(
-        student=student, question__quiz=quiz_result.quiz
+        student=student,
+        question__quiz=quiz_result.quiz
     )
 
     # Map coding submissions by question ID
     coding_answers = {submission.question.id: submission for submission in coding_submissions}
 
+    # Pass all required data to the template
     return render(request, 'students/quiz_review.html', {
         'quiz_result': quiz_result,
         'student_answers': student_answers,

@@ -50,52 +50,53 @@
     </table>
 
     <!-- Table for Coding Questions -->
-    <h2>Coding Questions</h2>
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Question</th>
-                <th>Your Code</th>
-                <th>Feedback</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for answer in student_answers %}
-                {% if answer.question.question_type == 'CODING' %}
-                    {% with coding_submission=coding_answers|get_item:answer.question.id %}
-                        <tr>
-                            <td>{{ answer.question.text }}</td>
-                            <td>
-                                {% if coding_submission %}
-                                    <pre>{{ coding_submission.submitted_code }}</pre>
+<h2>Coding Questions</h2>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Question</th>
+            <th>Your Code</th>
+            <th>Feedback</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for answer in student_answers %}
+            {% if answer.question.question_type == 'CODING' %}
+                {% with coding_submission=coding_answers|get_item:answer.question.id %}
+                    <tr>
+                        <td>{{ answer.question.text }}</td>
+                        <td>
+                            {% if coding_submission %}
+                                <pre>{{ coding_submission.submitted_code }}</pre>
+                            {% else %}
+                                <span>No submission</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if coding_submission %}
+                                {{ coding_submission.feedback|default:"No feedback available" }}
+                            {% else %}
+                                No feedback available
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if coding_submission %}
+                                {% if coding_submission.is_correct %}
+                                    <span class="text-success">Correct</span>
                                 {% else %}
-                                    <span>No submission</span>
+                                    <span class="text-danger">Incorrect</span>
                                 {% endif %}
-                            </td>
-                            <td>
-                                {% if coding_submission %}
-                                    {{ coding_submission.feedback }}
-                                {% else %}
-                                    No feedback available
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if coding_submission %}
-                                    {% if coding_submission.is_correct %}
-                                        <span class="text-success">Correct</span>
-                                    {% else %}
-                                        <span class="text-danger">Incorrect</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="text-warning">Not Submitted</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endwith %}
-                {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
+                            {% else %}
+                                <span class="text-warning">Not Submitted</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endwith %}
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
 </div>
 {% endblock %}
