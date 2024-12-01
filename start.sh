@@ -1,13 +1,7 @@
 #!/bin/bash
 
-# Start MySQL server
-service mysql start
-
-# Set up MySQL database and user
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS student_details;"
-mysql -u root -e "CREATE USER IF NOT EXISTS 'supreme_leader'@'%' IDENTIFIED BY 'A!@#$%^123456';"
-mysql -u root -e "GRANT ALL PRIVILEGES ON student_details.* TO 'supreme_leader'@'%';"
-mysql -u root -e "FLUSH PRIVILEGES;"
+# Wait for the database to be ready
+/wait-for-it.sh ${DB_HOST}:${DB_PORT} --timeout=30 --strict
 
 # Run Django migrations
 python manage.py migrate

@@ -13,17 +13,3 @@ services:
       - .env
     ports:
       - "10000:10000"
-    networks:
-      - quiz_app_network
-    command: >
-      sh -c "
-      /wait-for-it.sh ${DB_HOST}:${DB_PORT} --timeout=30 --strict -- &&
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:10000
-      "
-
-volumes:
-  postgres_data:  # Named volume for PostgreSQL data
-
-networks:
-  quiz_app_network:
