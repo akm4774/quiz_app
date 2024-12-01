@@ -4,13 +4,11 @@ FROM python:3.10-slim
 # Set the working directory
 WORKDIR /app
 
-# Install system dependencies for Django and MySQL
+# Install system dependencies for Django and PostgreSQL
 RUN apt-get update && apt-get install -y \
     pkg-config \
     gcc \
-    libmariadb-dev \
-    libmariadb-dev-compat \
-    mariadb-server \
+    libpq-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -32,11 +30,6 @@ COPY .env .env
 
 # Expose the application port
 EXPOSE 10000
-EXPOSE 3306
-
-# Add a script to start MySQL and Django
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
 
 # Default command
 CMD ["/start.sh"]

@@ -61,12 +61,12 @@ WSGI_APPLICATION = 'quiz_application.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),        # student_details
-        'USER': os.getenv('DB_USER'),        # supreme_leader
-        'PASSWORD': os.getenv('DB_PASSWORD'), # A!@#$%^123456
-        'HOST': os.getenv('DB_HOST'),        # mysql
-        'PORT': os.getenv('DB_PORT'),        # 3306
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),  # postgres
+        'USER': os.getenv('DB_USER'),  # your Supabase user
+        'PASSWORD': os.getenv('DB_PASSWORD'),  # your Supabase password
+        'HOST': os.getenv('DB_HOST'),  # Supabase host
+        'PORT': os.getenv('DB_PORT'),  # Supabase port
     }
 }
 
