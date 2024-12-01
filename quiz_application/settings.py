@@ -111,3 +111,6 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+CSRF_TRUSTED_ORIGINS = [
+    'https://quiz-app-django-taty.onrender.com',
+]
