@@ -1,19 +1,21 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-<div class="container">
-    <h1 class="display-4">Create Quiz</h1>
-    <hr>
+<div class="container mt-4" style="background: linear-gradient(135deg, #4e54c8, #8f94fb); font-family: 'Roboto', sans-serif; border-radius: 15px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+    <h1 class="display-4 text-center text-white">Create Quiz</h1>
+    <hr class="mb-4" style="border-color: rgba(255, 255, 255, 0.6);">
 
-    <form method="post">
+    <form method="post" class="text-white">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="mb-3">
+            {{ form.as_p }}
+        </div>
 
         <div class="form-group">
-            <label>Select Students Allowed to Take Quiz:</label>
-            <div class="mb-2">
-                <button type="button" id="selectAll" class="btn btn-sm btn-secondary">Select All</button>
-                <button type="button" id="deselectAll" class="btn btn-sm btn-secondary">Deselect All</button>
+            <label class="form-label fw-bold">Select Students Allowed to Take Quiz:</label>
+            <div class="d-flex gap-2 mb-3">
+                <button type="button" id="selectAll" class="btn btn-outline-light btn-sm">Select All</button>
+                <button type="button" id="deselectAll" class="btn btn-outline-danger btn-sm">Deselect All</button>
             </div>
             <div class="form-check">
                 {% for student in students %}
@@ -26,18 +28,18 @@
         </div>
 
         <div class="form-group">
-            <label for="attempts">Number of Attempts Allowed:</label>
+            <label for="attempts" class="form-label fw-bold">Number of Attempts Allowed:</label>
             <input type="number" id="attempts" name="attempts" class="form-control" min="1" value="1">
         </div>
 
         <div class="form-group">
-            <label for="duration">Quiz Duration (minutes):</label>
+            <label for="duration" class="form-label fw-bold">Quiz Duration (minutes):</label>
             <input type="number" id="duration" name="duration" class="form-control" min="1">
         </div>
 
-        <div class="form-group d-flex">
-            <button type="submit" class="btn btn-primary">Create Quiz</button>
-            <a href="{% url 'upload_quiz' %}" class="btn btn-secondary ml-2">Upload Docu</a>
+        <div class="form-group d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-success">Create Quiz</button>
+            <a href="{% url 'upload_quiz' %}" class="btn btn-secondary">Upload Document</a>
         </div>
     </form>
 </div>

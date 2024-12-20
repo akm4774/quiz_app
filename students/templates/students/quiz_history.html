@@ -3,15 +3,26 @@
 {% block title %}Quiz History{% endblock %}
 
 {% block content %}
-  <h2 class="mt-4 mb-4">Quiz History</h2>
-  <ul class="list-group">
-    {% for result in quiz_results %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <strong>{{ result.quiz.title }}</strong> - Score: {{ result.score }}%
+<div class="container py-5">
+    <h2 class="text-center text-primary mb-4">Your Quiz History</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if quiz_results %}
+                <ul class="list-group shadow-sm">
+                    {% for result in quiz_results %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ result.quiz.title }}</strong>
+                                <p class="mb-0 text-muted">Score: {{ result.score }}%</p>
+                            </div>
+                            <a href="{% url 'quiz_review' result.id %}" class="btn btn-primary btn-sm">Review</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-center text-muted">You haven't taken any quizzes yet.</p>
+            {% endif %}
         </div>
-        <a class="btn btn-primary btn-sm" href="{% url 'quiz_review' result.id %}">Review</a>
-      </li>
-    {% endfor %}
-  </ul>
+    </div>
+</div>
 {% endblock %}

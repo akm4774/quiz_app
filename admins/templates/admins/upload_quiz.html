@@ -1,15 +1,33 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-<h2>Upload Quiz</h2>
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-lg w-100" style="max-width: 600px; border-radius: 15px;">
+        <div class="card-header text-center bg-primary text-white">
+            <h1>Upload Quiz</h1>
+        </div>
+        <div class="card-body">
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.as_p }}
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Upload</button>
+            </form>
+        </div>
+    </div>
+</div>
 
-{% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-{% endif %}
-
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Upload</button>
-</form>
+<style>
+    body {
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        font-family: 'Roboto', sans-serif;
+    }
+    .card {
+        border: none;
+    }
+</style>
 {% endblock %}

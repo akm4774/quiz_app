@@ -1,74 +1,70 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-  <div class="container">
-    <h1 class="display-4">Edit Quiz: {{ quiz.title }}</h1>
-    <hr>
+<div class="container mt-5">
+    <h1 class="display-6 text-center">Edit Quiz: <span class="fw-bold">{{ quiz.title }}</span></h1>
+    <hr class="mb-4">
+    <div class="card p-4 shadow-lg">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
 
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
+            <div class="form-group mb-3">
+                <label for="students" class="fw-bold">Select Students Allowed to Take Quiz:</label>
+                <div class="d-flex gap-2">
+                    <button type="button" id="selectAll" class="btn btn-outline-primary btn-sm">Select All</button>
+                    <select name="students" id="students" class="form-select" multiple>
+                        {% for student in students %}
+                            <option value="{{ student.id }}" 
+                                {% if student in quiz.allowed_students.all %}selected{% endif %}>
+                                {{ student.user }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
-      <div class="form-group">
-        <label for="students">Select Students Allowed to Take Quiz:</label>
-        <button type="button" id="selectAll" class="btn btn-sm btn-secondary mb-2">Select All</button>
-        <select name="students" id="students" class="form-control" multiple>
-          {% for student in students %}
-            <option value="{{ student.id }}" 
-              {% if student in quiz.allowed_students.all %}selected{% endif %}>
-              {{ student.user }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
+            <div class="form-group mb-3">
+                <label for="attempts" class="fw-bold">Number of Attempts Allowed:</label>
+                <input type="number" id="attempts" name="attempts" class="form-control" min="1" value="{{ quiz.max_attempts }}">
+            </div>
 
-      <div class="form-group">
-        <label for="attempts">Number of Attempts Allowed:</label>
-        <input type="number" id="attempts" name="attempts" class="form-control" 
-               min="1" value="{{ quiz.max_attempts }}">
-      </div>
+            <div class="form-group mb-3">
+                <label for="duration" class="fw-bold">Quiz Duration (minutes):</label>
+                <input type="number" id="duration" name="duration" class="form-control" min="1" value="{{ quiz.duration }}">
+            </div>
 
-      <div class="form-group">
-        <label for="duration">Quiz Duration (minutes):</label>
-        <input type="number" id="duration" name="duration" class="form-control" 
-               min="1" value="{{ quiz.duration }}">
-      </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
 
-      <button type="submit" class="btn btn-primary">Save Changes</button>
-    </form>
+        <h2 class="mt-4">Questions:</h2>
+        <ul class="list-group">
+            {% for question in quiz.questions.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ question.text }}
+                    <div>
+                        <a href="{% url 'delete_question' question.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                        <a href="{% url 'edit_question' quiz.pk question.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item">No questions yet.</li>
+            {% endfor %}
+        </ul>
 
-    <h2 class="mt-4">Questions:</h2>
-    <ul class="list-group">
-      {% for question in quiz.questions.all %}
-        <li class="list-group-item">
-          {{ question.text }}
+        <div class="d-flex gap-2 mt-3">
+            <a href="{% url 'create_question' quiz.pk %}" class="btn btn-primary">Add New Question</a>
+            <a href="{% url 'delete_quiz' quiz.pk %}" class="btn btn-danger">Delete Quiz</a>
+        </div>
+    </div>
 
-          <div class="float-right">
-            <a href="{% url 'delete_question' question.pk %}" class="btn btn-sm btn-danger">Delete</a>
-            <a href="{% url 'edit_question' quiz.pk question.pk %}" class="btn btn-sm btn-primary">Edit</a>
-          </div>
-        </li>
-      {% empty %}
-        <li class="list-group-item">No questions yet.</li>
-      {% endfor %}
-    </ul>
-
-    <p class="mt-3">
-      <a href="{% url 'create_question' quiz.pk %}" class="btn btn-primary">Add New Question</a>
-    </p>
-
-    <p class="mt-3">
-      <a href="{% url 'delete_quiz' quiz.pk %}" class="btn btn-danger">Delete Quiz</a>
-    </p>
-  </div>
-
-  <script>
-    // JavaScript to handle "Select All" functionality
-    document.getElementById('selectAll').addEventListener('click', function() {
-      const studentsSelect = document.getElementById('students');
-      for (let i = 0; i < studentsSelect.options.length; i++) {
-        studentsSelect.options[i].selected = true;
-      }
-    });
-  </script>
+    <script>
+        document.getElementById('selectAll').addEventListener('click', function() {
+            const studentsSelect = document.getElementById('students');
+            for (let i = 0; i < studentsSelect.options.length; i++) {
+                studentsSelect.options[i].selected = true;
+            }
+        });
+    </script>
+</div>
 {% endblock %}

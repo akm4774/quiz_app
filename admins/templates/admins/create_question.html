@@ -1,19 +1,39 @@
 {% extends 'admins/base.html' %}
+
 {% block content %}
-  <div class="container">
-    <h1>Create Question for Quiz: {{ quiz.title }}</h1>
-    <hr>
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      {% if form.errors %}
-        <div class="alert alert-danger">
-          <strong>There are errors in your form:</strong>
-          {{ form.errors }}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-lg w-100" style="max-width: 600px; border-radius: 15px;">
+        <div class="card-header text-center bg-primary text-white">
+            <h1>Create Question for Quiz: {{ quiz.title }}</h1>
         </div>
-      {% endif %}
-      <button type="submit" class="btn btn-primary">Create Question</button>
-    </form>
-    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary mt-3">Cancel</a>
-  </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.as_p }}
+                </div>
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>There are errors in your form:</strong>
+                        {{ form.errors }}
+                    </div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary w-100">Create Question</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        font-family: 'Roboto', sans-serif;
+    }
+    .card {
+        border: none;
+    }
+</style>
 {% endblock %}

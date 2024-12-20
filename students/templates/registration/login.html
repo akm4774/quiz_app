@@ -3,36 +3,35 @@
 {% block title %}Log In{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="text-center mb-4">Log In</h2>
-            <form method="post">
-                {% csrf_token %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%; border-radius: 15px;">
+        <h2 class="text-center mb-4">Log In</h2>
+        <form method="post">
+            {% csrf_token %}
 
-                <div class="form-group">
-                    <label for="id_username">Username:</label>
-                    <input type="text" id="id_username" name="username" 
-                           class="form-control" placeholder="Enter your username" required>
+            <div class="mb-3">
+                <label for="id_username" class="form-label">Username:</label>
+                <input type="text" id="id_username" name="username" 
+                       class="form-control" placeholder="Enter your username" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="id_password" class="form-label">Password:</label>
+                <div class="input-group">
+                    <input type="password" id="id_password" name="password" 
+                           class="form-control" placeholder="Enter your password" required>
+                    <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+                    </button>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="id_password">Password:</label>
-                    <div class="input-group">
-                        <input type="password" id="id_password" name="password" 
-                               class="form-control" placeholder="Enter your password" required>
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword">
-                                <i class="fas fa-eye" id="eyeIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Log In</button>
+        </form>
 
-                <button type="submit" class="btn btn-primary btn-block mt-3">Log In</button>
-            </form>
-            <p class="text-center mt-3">
-                Don't have an account? <a href="{% url 'signup' %}" class="text-decoration-none">Sign Up</a>
+        <div class="text-center mt-4">
+            <p class="mb-1">Don't have an account? 
+                <a href="{% url 'signup' %}" class="text-primary text-decoration-none fw-bold">Sign Up</a>
             </p>
         </div>
     </div>
@@ -40,6 +39,27 @@
 
 <!-- Include FontAwesome for the eye icon -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+    body {
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        font-family: 'Roboto', sans-serif;
+    }
+    .card {
+        background: #ffffff;
+        border: none;
+    }
+    .btn-primary {
+        background-color: #4e54c8;
+        border: none;
+    }
+    .btn-primary:hover {
+        background-color: #3d41a3;
+    }
+    .btn-outline-secondary {
+        border: 1px solid #ced4da;
+    }
+</style>
 
 <script>
     document.getElementById('togglePassword').addEventListener('click', function () {

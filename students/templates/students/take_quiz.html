@@ -1,37 +1,65 @@
 {% extends "students/base.html" %}
 
+{% block title %}Take Quiz: {{ quiz.title }}{% endblock %}
+
 {% block content %}
-<h2>{{ quiz.title }}</h2>
-<p>{{ quiz.description }}</p>
-
-<form method="post">
-    {% csrf_token %}
-    {% for question in non_coding_questions %}
-        <div>
-            <p>{{ question.text }}</p>
-            {% if question.question_type == 'MCQ' %}
-                <!-- Render MCQ options -->
-            {% elif question.question_type == 'TRUE_FALSE' %}
-                <!-- Render True/False options -->
-            {% elif question.question_type == 'SHORT' %}
-                <!-- Render Short Answer input -->
-            {% elif question.question_type == 'FILL_BLANK' %}
-                <!-- Render Fill-in-the-Blank input -->
-            {% elif question.question_type == 'MULTI_CORRECT' %}
-                <!-- Render Multi-Correct options -->
-            {% endif %}
+<div class="container py-5">
+    <div class="card shadow-lg border-0 mb-4">
+        <div class="card-body">
+            <h2 class="text-primary text-center">{{ quiz.title }}</h2>
+            <p class="lead text-center text-muted">{{ quiz.description }}</p>
         </div>
-    {% endfor %}
-
-    <button type="submit">Submit Quiz</button>
-</form>
-
-<h3>Coding Questions</h3>
-{% for coding_question in coding_questions %}
-    <div>
-        <p>{{ coding_question.text }}</p>
-        <a class="btn btn-primary btn-sm" href="{% url 'submit_coding_question' coding_question.id %}" class="btn btn-primary">Solve Coding Question</a>
     </div>
-{% endfor %}
 
+    <form method="post" class="shadow-sm p-4 bg-white rounded">
+        {% csrf_token %}
+        <h4 class="text-secondary mb-4">Non-Coding Questions</h4>
+        {% for question in non_coding_questions %}
+            <div class="mb-4">
+                <h5>{{ question.text }}</h5>
+                <div>
+                    {% if question.question_type == 'MCQ' %}
+                        <!-- Render MCQ options -->
+                        {% for option in question.options %}
+                            <div class="form-check">
+                                <input type="radio" name="question_{{ question.id }}" class="form-check-input" id="option_{{ option.id }}" value="{{ option.id }}">
+                                <label class="form-check-label" for="option_{{ option.id }}">{{ option.text }}</label>
+                            </div>
+                        {% endfor %}
+                    {% elif question.question_type == 'TRUE_FALSE' %}
+                        <div class="form-check">
+                            <input type="radio" name="question_{{ question.id }}" class="form-check-input" id="true_{{ question.id }}" value="True">
+                            <label class="form-check-label" for="true_{{ question.id }}">True</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" name="question_{{ question.id }}" class="form-check-input" id="false_{{ question.id }}" value="False">
+                            <label class="form-check-label" for="false_{{ question.id }}">False</label>
+                        </div>
+                    {% elif question.question_type == 'SHORT' %}
+                        <input type="text" name="question_{{ question.id }}" class="form-control" placeholder="Type your answer here">
+                    {% elif question.question_type == 'FILL_BLANK' %}
+                        <input type="text" name="question_{{ question.id }}" class="form-control" placeholder="Fill in the blank">
+                    {% elif question.question_type == 'MULTI_CORRECT' %}
+                        {% for option in question.options %}
+                            <div class="form-check">
+                                <input type="checkbox" name="question_{{ question.id }}" class="form-check-input" id="option_{{ option.id }}" value="{{ option.id }}">
+                                <label class="form-check-label" for="option_{{ option.id }}">{{ option.text }}</label>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <h4 class="text-secondary mt-5 mb-4">Coding Questions</h4>
+        {% for coding_question in coding_questions %}
+            <div class="mb-4 p-3 border rounded shadow-sm">
+                <h5>{{ coding_question.text }}</h5>
+                <a class="btn btn-primary btn-sm" href="{% url 'submit_coding_question' coding_question.id %}">Solve Coding Question</a>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-success btn-lg w-100">Submit Quiz</button>
+    </form>
+</div>
 {% endblock %}

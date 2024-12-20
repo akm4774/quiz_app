@@ -1,23 +1,25 @@
 {% extends "students/base.html" %}
 
-{% block title %}
-Available Quizzes
-{% endblock %}
+{% block title %}Available Quizzes{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container py-5">
+    <h2 class="text-center text-primary mb-4">Available Quizzes</h2>
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h2 class="text-center mb-4">Available Quizzes</h2>
-            <ul class="list-group">
-                {% for quiz in quizzes %}
-                    <li class="list-group-item">
-                        <h3 class="fw-bold">{{ quiz.title }}</h3>
-                        <p class="text-muted">{{ quiz.description }}</p>
-                        <a href="{% url 'take_quiz' quiz.id %}" class="btn btn-primary btn-sm">Take Quiz</a>
-                    </li>
-                {% endfor %}
-            </ul>
+            {% if quizzes %}
+                <div class="list-group">
+                    {% for quiz in quizzes %}
+                        <div class="list-group-item mb-3 p-4 shadow-sm border rounded">
+                            <h4 class="text-dark">{{ quiz.title }}</h4>
+                            <p class="text-muted">{{ quiz.description }}</p>
+                            <a href="{% url 'take_quiz' quiz.id %}" class="btn btn-primary btn-sm">Take Quiz</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center text-muted">No quizzes are currently available. Check back later!</p>
+            {% endif %}
         </div>
     </div>
 </div>

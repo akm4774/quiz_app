@@ -1,77 +1,76 @@
 {% extends 'admins/base.html' %}
 
 {% block content %}
-<div class="container">
-    <h1 class="display-4">Quiz Performance: {{ quiz.title }}</h1>
-    <hr>
-    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary mb-3">Back to Dashboard</a>
-    <h3>Student Performances</h3>
+<div class="container mt-5">
+    <h1 class="display-6 text-center">Quiz Performance: <span class="fw-bold">{{ quiz.title }}</span></h1>
+    <hr class="mb-4">
+    <div class="card p-4 shadow-lg">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+        <h3>Student Performances</h3>
 
-    {% if student_data %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Number of Attempts</th>
-                    <th>Latest Scores</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for student, data in student_data.items %}
+        {% if student_data %}
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>{{ student.user.username }}</td>
-                        <td>{{ data.attempts }}</td>
-                        <td>
-                            {{ data.scores|join:", " }}
-                        </td>
+                        <th>Student</th>
+                        <th>Number of Attempts</th>
+                        <th>Latest Scores</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for student, data in student_data.items %}
+                        <tr>
+                            <td>{{ student.user.username }}</td>
+                            <td>{{ data.attempts }}</td>
+                            <td>{{ data.scores|join:", " }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-        <h4>Score Progression</h4>
-        <canvas id="scoreChart"></canvas>
+            <h4>Score Progression</h4>
+            <canvas id="scoreChart"></canvas>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            var ctx = document.getElementById('scoreChart').getContext('2d');
-            var chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: JSON.parse(document.getElementById('attemptNumbers').textContent),
-                    datasets: [{
-                        label: 'Scores',
-                        data: JSON.parse(document.getElementById('scoresData').textContent),
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Score Percentage'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Attempt Number'
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                var ctx = document.getElementById('scoreChart').getContext('2d');
+                var chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: JSON.parse(document.getElementById('attemptNumbers').textContent),
+                        datasets: [{
+                            label: 'Scores',
+                            data: JSON.parse(document.getElementById('scoresData').textContent),
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Score Percentage'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Attempt Number'
+                                }
                             }
                         }
                     }
-                }
-            });
-        </script>
+                });
+            </script>
 
-        <!-- Use JSON-safe script tags to pass data -->
-        <script type="application/json" id="attemptNumbers">{{ attempt_numbers|safe }}</script>
-        <script type="application/json" id="scoresData">{{ scores|safe }}</script>
+            <script type="application/json" id="attemptNumbers">{{ attempt_numbers|safe }}</script>
+            <script type="application/json" id="scoresData">{{ scores|safe }}</script>
 
-    {% else %}
-        <p>No student data available for this quiz.</p>
-    {% endif %}
+        {% else %}
+            <p>No student data available for this quiz.</p>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
