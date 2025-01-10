@@ -1,39 +1,43 @@
-Quiz Application
-================
+# Quiz Application
 
-This is a quiz application built using Django.
+This is a fully-featured quiz application built using Django, deployed via Render.
 
-Getting Started
----------------
+## Getting Started
 
-### Installation
+### Application Link
+Access the application here: [Quiz Application](https://quiz-app-django-taty.onrender.com/)
 
-1. Clone the repository: `git clone https://github.com/your-username/quiz-app.git`
-2. Create a database: `python manage.py migrate`
-3. Load the database dump: `python manage.py loaddata db_dump.json`
+### Superuser Credentials
+For administrative access, use the following credentials:
+- **Username:** teacher1
+- **Password:** super1234
 
-### Running the Application
+## Features
 
-1. Run the development server: `python manage.py runserver`
-2. Open the application in your web browser: `http://localhost:8000`
+### Features for Students
+- **Take Quizzes:** Attempt quizzes directly from your dashboard.
+- **Coding Questions:** Solve technical assessments with an embedded code editor supporting 3+ programming languages.
+- **View Quiz History:** Access past quiz attempts, scores, and detailed performance reports.
+- **Performance Metrics:** Analyze your progress with key metrics like:
+  - Overall scores
+  - Rankings
+  - Performance trends
+  - Profile details
 
-### Features
+### Features for Admins
+- **Quiz Management:**
+  - Create, edit, and delete quizzes.
+  - Upload quizzes via `.csv` files to streamline quiz creation (reduces setup time by 75%).
+- **Question Types:**
+  - Multiple-choice questions
+  - Coding questions with real-time code execution
+- **User Management:**
+  - Manage student accounts
+  - Hide/unhide students
+- **Advanced Analytics:** Access performance trends and quiz insights.
 
-#### Features for Students
-
-* Take quizzes
-* View quiz history
-* View available quizzes
-
-#### Features for Admins
-
-* Create quizzes
-* Edit/delete quizzes
-* Hide/unhide students
-
-### Database Structure
-
-The application uses MySQL to store data for the following tables:
+## Database Structure
+The application uses PostgreSQL to store data. Below is an overview of key tables:
 
 1. **`students_student`**
    - Stores student information.
@@ -48,23 +52,59 @@ The application uses MySQL to store data for the following tables:
    - **Fields:** `id`, `title`, `description`, `created_at`, `updated_at`, `due_date`, `is_available_to_students`
 
 4. **`admins_question`**
-   - Stores questions related to each quiz, along with multiple-choice options.
+   - Stores questions related to each quiz, including multiple-choice options and coding assessments.
    - **Fields:** `id`, `quiz_id` (Foreign Key to `admins_quiz`), `text`, `choice1`, `choice2`, `choice3`, `choice4`, `correct_answer`
 
 5. **`students_quizresult`**
    - Stores results of quizzes taken by students, including the score and timestamp.
    - **Fields:** `id`, `student_id` (Foreign Key to `students_student`), `quiz_id` (Foreign Key to `admins_quiz`), `score`, `taken_at`
 
-### Testing Functionality
+## Installation (For Local Development)
 
-To test the application, use the following credentials:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/quiz-app.git
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Create a PostgreSQL database and update the `DATABASES` settings in `settings.py`.
+4. Apply migrations:
+   ```bash
+   python manage.py migrate
+   ```
+5. Load the database dump (if available):
+   ```bash
+   python manage.py loaddata db_dump.json
+   ```
+6. Run the development server:
+   ```bash
+   python manage.py runserver
+   ```
+7. Access the application locally at `http://localhost:8000`
 
-#### For Admin
+## Deployment
+This application is deployed on Render using the following steps:
 
-- **Username:** teacher
-- **Password:** testpass12
+1. Push the project to a Git repository.
+2. Link the repository to Render.
+3. Configure environment variables (e.g., `DATABASE_URL` for PostgreSQL).
+4. Deploy the application via Render's web service.
 
-#### For Student
+## Testing
 
+Use the following credentials to test the application:
+
+### Admin Access
+- **Username:** teacher1
+- **Password:** super1234
+
+### Student Access
 - **Username:** baba_yaga
 - **Password:** student1234
+
+---
+
+Enjoy using the Quiz Application for seamless quiz management and performance tracking!
+
